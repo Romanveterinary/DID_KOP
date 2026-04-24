@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Дід Коп: Радар 360 + Офлайн</title>
+    <title>Дід Коп: Вібро-Радар 360</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -67,6 +67,7 @@
             <polygon points="50,200 50,110 20,100" fill="#7f8c8d"/>
         </svg>
         <div id="ps-info">0 м</div>
+        <div id="ps-vibro-status" style="color:#e74c3c; font-size:16px; margin-top:10px; font-weight:bold; display:none;">📳 ВІБРО-ПОВОДИР АКТИВНИЙ</div>
         <button class="btn" style="background:#333; color:#aaa; margin-top:50px; font-size:18px;" onclick="togglePowerSave()">УВІМКНУТИ КАРТУ</button>
     </div>
 
@@ -78,6 +79,9 @@
             <polygon points="50,200 50,110 20,100" fill="#7f8c8d"/>
         </svg>
         <div id="radar-info">Напрямок | 0 м</div>
+        
+        <button id="btn-guide" class="btn" style="background:#555; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="toggleGuideMode()">📳 РЕЖИМ ПОВОДИРЯ</button>
+        
         <button class="btn" style="background:#27ae60; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="togglePowerSave()">🌙 ЕКОНОМІЯ ЕНЕРГІЇ</button>
         <div style="color:#aaa; font-size:12px; margin-top:10px; cursor:pointer;" onclick="closeRadar()">❌ ЗАКРИТИ РАДАР</div>
     </div>
@@ -141,47 +145,87 @@
         var SECRET_PIN = "7777"; 
         var targetCoords = null;
         
-        // ЗМІННІ ДЛЯ ТОЧНОГО КОМПАСА
         var deviceHeading = 0;
         var compassInitialized = false;
-        var hasAbsolute = false; // Перевірка для Android
+        var hasAbsolute = false; 
 
-        // НОВА, ЧИСТА ІНІЦІАЛІЗАЦІЯ КОМПАСА БЕЗ КОНФЛІКТІВ
+        // ВІБРО-ПОВОДИР
+        var guideModeActive = false;
+        var guideInterval = null;
+
         function initCompass() {
             if (compassInitialized) return;
 
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // Це iOS (iPhone)
                 DeviceOrientationEvent.requestPermission().then(state => {
                     if (state === 'granted') {
                         window.addEventListener('deviceorientation', function(e) {
-                            if (e.webkitCompassHeading) {
-                                deviceHeading = e.webkitCompassHeading;
-                                updateRadar();
-                            }
+                            if (e.webkitCompassHeading) { deviceHeading = e.webkitCompassHeading; updateRadar(); }
                         }, true);
                         compassInitialized = true;
                     }
                 }).catch(console.error);
             } else {
-                // Це Android та інші
-                // 1. Слухаємо АБСОЛЮТНИЙ компас (Справжня північ)
                 window.addEventListener("deviceorientationabsolute", function(e) {
-                    if (e.alpha !== null) {
-                        hasAbsolute = true;
-                        deviceHeading = 360 - e.alpha; // Математика Android для правильного напрямку
-                        updateRadar();
-                    }
+                    if (e.alpha !== null) { hasAbsolute = true; deviceHeading = 360 - e.alpha; updateRadar(); }
                 }, true);
                 
-                // 2. Резервний варіант ТІЛЬКИ якщо абсолютного немає
                 window.addEventListener("deviceorientation", function(e) {
-                    if (!hasAbsolute && e.alpha !== null) {
-                        deviceHeading = 360 - e.alpha;
-                        updateRadar();
-                    }
+                    if (!hasAbsolute && e.alpha !== null) { deviceHeading = 360 - e.alpha; updateRadar(); }
                 }, true);
                 compassInitialized = true;
+            }
+        }
+
+        // ЛОГІКА ВІБРАЦІЇ
+        function toggleGuideMode() {
+            var btn = document.getElementById('btn-guide');
+            var psStatus = document.getElementById('ps-vibro-status');
+            
+            if (guideModeActive) {
+                // Вимкнути
+                guideModeActive = false;
+                clearInterval(guideInterval);
+                btn.style.background = "#555";
+                psStatus.style.display = "none";
+                if(navigator.vibrate) navigator.vibrate(0);
+            } else {
+                // Увімкнути
+                if(!navigator.vibrate) {
+                    alert("Ваш пристрій або браузер (можливо iPhone) не підтримує вібрацію веб-сайтів.");
+                    return;
+                }
+                
+                guideModeActive = true;
+                btn.style.background = "#e74c3c"; // Червоний, активний
+                psStatus.style.display = "block";
+                navigator.vibrate([100, 50, 100]); // Сигнал успішного включення
+                
+                guideInterval = setInterval(function() {
+                    if (!targetCoords || currentLat === null) return;
+                    
+                    var originLat = currentLat;
+                    var originLon = currentLon;
+                    
+                    var y = Math.sin(deg2rad(targetCoords.lon - originLon)) * Math.cos(deg2rad(targetCoords.lat));
+                    var x = Math.cos(deg2rad(originLat)) * Math.sin(deg2rad(targetCoords.lat)) - Math.sin(deg2rad(originLat)) * Math.cos(deg2rad(targetCoords.lat)) * Math.cos(deg2rad(targetCoords.lon - originLon));
+                    var brng = (rad2deg(Math.atan2(y, x)) + 360) % 360; 
+                    
+                    // Різниця між тим, куди дивиться телефон, і ціллю
+                    var diff = Math.abs(brng - deviceHeading);
+                    if (diff > 180) diff = 360 - diff;
+                    
+                    // Зони вібрації
+                    if (diff < 15) {
+                        // Точно в ціль (СИЛЬНА ВІБРАЦІЯ)
+                        navigator.vibrate(250);
+                    } else if (diff >= 15 && diff < 40) {
+                        // Поруч з ціллю (КОРОТКІ ІМПУЛЬСИ)
+                        navigator.vibrate(40);
+                    }
+                    // Якщо відхилення більше 40 градусів - тиша
+                    
+                }, 400); // Перевірка і вібрація кожні 400 мілісекунд
             }
         }
 
@@ -251,7 +295,7 @@
         }
 
         function handleCarMarker() {
-            initCompass(); // Активуємо компас
+            initCompass(); 
             if (carMarker !== null) {
                 if (confirm("Точно видалити мітку паркування автомобіля?")) {
                     map.removeLayer(carMarker); carMarker = null; carLat = null; carLon = null; closeRadar();
@@ -265,13 +309,17 @@
         }
 
         function startNavigation(lat, lon, label="Ціль") { 
-            initCompass(); // Активуємо компас
+            initCompass(); 
             targetCoords = {lat: lat, lon: lon, label: label}; 
             document.getElementById('radar-panel').style.display = 'block'; 
             updateRadar(); 
         }
         
-        function closeRadar() { document.getElementById('radar-panel').style.display = 'none'; targetCoords = null; }
+        function closeRadar() { 
+            document.getElementById('radar-panel').style.display = 'none'; 
+            targetCoords = null; 
+            if(guideModeActive) toggleGuideMode(); // Вимикаємо вібро при закритті радара
+        }
 
         function togglePowerSave() {
             initCompass();
