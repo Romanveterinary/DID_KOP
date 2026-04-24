@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Дід Коп: Радар 360 + Офлайн</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; background-color: #111; color: white; font-family: sans-serif; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; z-index: 1; background-color: #222; }
+        
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: 55px; background: rgba(20, 20, 20, 0.95); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; box-sizing: border-box; z-index: 2000; border-bottom: 2px solid #333; }
+        .bottom-panel { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 10px; width: 95%; max-width: 400px; }
+        .btn { flex: 1; padding: 15px; font-size: 15px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        /* ПАНЕЛЬ РАДАРА */
+        #radar-panel { display: none; position: fixed; top: 65px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; background: rgba(0,0,0,0.9); border: 2px solid #f39c12; border-radius: 15px; padding: 15px; z-index: 3000; text-align: center; }
+        .compass-arrow { transition: transform 0.1s linear; margin: 0 auto 10px auto; display: block; transform-origin: center center; }
+        #radar-info { font-size: 18px; font-weight: bold; color: #eee; margin-bottom: 10px; }
+
+        /* ЕКОНОМІЯ БАТАРЕЇ */
+        #power-save-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        #ps-info { font-size: 50px; font-weight: bold; color: #f39c12; margin-top: 30px; font-family: monospace; }
+
+        /* КНОПКИ ЗЛІВА */
+        #btn-recon { position: fixed; top: 70px; left: 15px; z-index: 1000; background: #8e44ad; color: white; border: 2px solid #9b59b6; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #btn-add-past { display: none; position: fixed; top: 125px; left: 15px; z-index: 1000; background: #27ae60; color: white; border: 2px solid #2ecc71; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #btn-map-toggle { position: fixed; top: 180px; left: 15px; z-index: 1000; background: #2c3e50; color: #f39c12; border: 2px solid #f39c12; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        .flag-icon { font-size: 35px; line-height: 35px; text-align: center; }
+        .map-thumb-container { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #f39c12; background: #111; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; }
+        .map-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        #journal-screen, #recon-modal { display: none; position: fixed; top: 55px; left: 0; width: 100%; height: calc(100vh - 55px); background: #1a1a1a; z-index: 2500; overflow-y: auto; padding: 15px; box-sizing: border-box; }
+        .ai-result-text { font-size: 18px; line-height: 1.5; color: #4ade80; margin-top: 15px; white-space: pre-wrap; background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #27ae60; }
+        .recon-text { font-size: 18px; line-height: 1.5; color: #f1c40f; margin-top: 15px; white-space: pre-wrap; background: #222; padding: 15px; border-radius: 8px; border-left: 4px solid #f39c12; }
+
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .pin-input { font-size: 40px; letter-spacing: 15px; width: 180px; text-align: center; font-weight: bold; background: #222; color: #f39c12; border: 2px solid #555; border-radius: 10px; padding: 15px; margin-bottom: 25px; }
+        .pin-btn { background: #27ae60; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        .clear-fix { clear: both; }
+        .find-card { background: #222; border: 1px solid #444; border-radius: 10px; padding: 15px; margin-bottom: 15px; position: relative; }
+        .find-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; float: left; margin-right: 15px; }
+        
+        #settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; justify-content: center; align-items: center; }
+        .modal-content { background: #222; padding: 20px; border-radius: 15px; width: 85%; max-width: 400px; text-align: center; border: 1px solid #444; max-height: 90vh; overflow-y: auto; }
+        input[type="text"] { width: 90%; padding: 12px; margin: 15px 0; background: #111; color: white; border: 1px solid #555; border-radius: 8px; font-family: monospace; }
+        
+        hr { border: 1px solid #333; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <h1 style="color: #d35400;">ДІД КОП 105</h1>
+        <p style="color: #aaa;">Введіть пароль</p>
+        <input type="password" id="pin-code" class="pin-input" maxlength="4" pattern="\d*">
+        <button class="pin-btn" onclick="checkPin()">УВІЙТИ</button>
+    </div>
+
+    <div id="power-save-screen">
+        <svg id="ps-arrow" class="compass-arrow" viewBox="0 0 100 200" style="width: 100px; height: 200px;">
+            <polygon points="50,0 80,100 50,110 20,100" fill="#e74c3c"/>
+            <polygon points="50,0 50,110 20,100" fill="#c0392b"/>
+            <polygon points="50,200 80,100 50,110 20,100" fill="#bdc3c7"/>
+            <polygon points="50,200 50,110 20,100" fill="#7f8c8d"/>
+        </svg>
+        <div id="ps-info">0 м</div>
+        <button class="btn" style="background:#333; color:#aaa; margin-top:50px; font-size:18px;" onclick="togglePowerSave()">УВІМКНУТИ КАРТУ</button>
+    </div>
+
+    <div id="radar-panel">
+        <svg id="radar-arrow" class="compass-arrow" viewBox="0 0 100 200" style="width: 40px; height: 80px;">
+            <polygon points="50,0 80,100 50,110 20,100" fill="#e74c3c"/>
+            <polygon points="50,0 50,110 20,100" fill="#c0392b"/>
+            <polygon points="50,200 80,100 50,110 20,100" fill="#bdc3c7"/>
+            <polygon points="50,200 50,110 20,100" fill="#7f8c8d"/>
+        </svg>
+        <div id="radar-info">Напрямок | 0 м</div>
+        <button class="btn" style="background:#27ae60; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="togglePowerSave()">🌙 ЕКОНОМІЯ ЕНЕРГІЇ</button>
+        <div style="color:#aaa; font-size:12px; margin-top:10px; cursor:pointer;" onclick="closeRadar()">❌ ЗАКРИТИ РАДАР</div>
+    </div>
+
+    <div class="top-bar">
+        <div style="font-weight: bold; color: #d35400; font-size: 16px;">ДІД КОП</div>
+        <div>
+            <button onclick="toggleJournal()" style="background:none; border:none; color:white; font-size:22px; margin-right: 10px;">📖</button>
+            <button onclick="openSettings()" style="background:none; border:none; color:white; font-size:22px;">⚙️</button>
+        </div>
+    </div>
+
+    <button id="btn-recon" onclick="doRecon()">🛰️ РОЗВІДКА</button>
+    <button id="btn-add-past" onclick="document.getElementById('flag-camera-input').click()">📍 ДОДАТИ МИНУЛЕ</button>
+    <button id="btn-map-toggle" onclick="cycleMap()">🗺️ МАПА: СУЧАСНА (GOOGLE)</button>
+
+    <div id="map"></div>
+
+    <div class="bottom-panel" id="main-buttons">
+        <button class="btn" style="background-color: #d35400; flex: 0.4; font-size: 20px;" onclick="handleCarMarker()">🚗</button>
+        <button class="btn" style="background-color: #2980b9;" onclick="findMe(true)">📍 ПРИЦІЛ</button>
+        <button class="btn" style="background-color: #27ae60;" onclick="document.getElementById('camera-input').click()">📸 ФОТО</button>
+    </div>
+
+    <div id="recon-modal"><div id="recon-content" style="padding-bottom: 30px;"></div></div>
+
+    <div id="journal-screen">
+        <h2 style="margin-top: 0;">Мій Журнал Знахідок</h2>
+        <button class="btn" style="background: #27ae60; width:100%; margin-bottom: 15px;" onclick="exportHTMLReport()">📋 ЗАВАНТАЖИТИ HTML-ЗВІТ</button>
+        <hr>
+        <div id="journal-list"></div>
+    </div>
+
+    <div id="settings-modal">
+        <div class="modal-content">
+            <h3>🤖 Налаштування ШІ</h3>
+            <input type="text" id="api-key-input" placeholder="Ключ Gemini">
+            <button class="btn" style="background:#2980b9; width:100%; margin-bottom:10px;" onclick="saveApiKey()">💾 ЗБЕРЕГТИ КЛЮЧ</button>
+            
+            <hr>
+            <h3>🗺️ Офлайн Мапа</h3>
+            <p style="font-size: 12px; color: #aaa;">Сканує та зберігає радіус 2 км від вас для роботи без інтернету.</p>
+            <button class="btn" style="background:#f39c12; width:100%; margin-bottom:10px;" onclick="cacheLocalArea()">📥 КЕШУВАТИ МАПУ (2х2 км)</button>
+
+            <hr>
+            <h3>🗄️ Резервна копія</h3>
+            <button class="btn" style="background:#27ae60; width:100%; margin-bottom:10px;" onclick="exportBackup()">💾 ЗБЕРЕГТИ БЕКАП (.json)</button>
+            <button class="btn" style="background:#8e44ad; width:100%; margin-bottom:10px;" onclick="document.getElementById('backup-input').click()">📂 ВІДНОВИТИ З ФАЙЛУ</button>
+            
+            <hr>
+            <button class="btn" style="background:red; color:white; width:100%; margin-bottom:10px;" onclick="emergencyReset()">🚨 ПОВНЕ СКИДАННЯ</button>
+            <button class="btn" style="background:#444; width:100%;" onclick="closeSettings()">ЗАКРИТИ</button>
+        </div>
+    </div>
+
+    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+    <input type="file" id="flag-camera-input" accept="image/*" style="display: none;">
+    <input type="file" id="backup-input" accept=".json" style="display: none;">
+
+    <script>
+        var SECRET_PIN = "7777"; 
+        var targetCoords = null;
+        var deviceHeading = 0;
+        var compassInitialized = false;
+
+        // Ініціалізація компаса для мобільних
+        function initCompass() {
+            if (compassInitialized) return;
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(state => {
+                    if (state === 'granted') { window.addEventListener('deviceorientation', handleOrientation, true); compassInitialized = true; }
+                }).catch(console.error);
+            } else {
+                window.addEventListener("deviceorientationabsolute", handleOrientationAbs, true);
+                window.addEventListener("deviceorientation", handleOrientation, true);
+                compassInitialized = true;
+            }
+        }
+
+        function handleOrientationAbs(e) { if (e.alpha !== null) { deviceHeading = e.alpha; updateRadar(); } }
+        function handleOrientation(e) { 
+            if (e.webkitCompassHeading) { deviceHeading = e.webkitCompassHeading; updateRadar(); } 
+            else if (e.alpha !== null) { deviceHeading = 360 - e.alpha; updateRadar(); } 
+        }
+
+        function checkPin() {
+            if(document.getElementById('pin-code').value === SECRET_PIN) {
+                sessionStorage.setItem('did_kop_unlocked', 'true'); unlockAndLocate();
+            } else { alert("❌ Невірний пароль!"); document.getElementById('pin-code').value = "";}
+        }
+
+        window.onload = function() { 
+            if(sessionStorage.getItem('did_kop_unlocked') === 'true') { unlockAndLocate(); }
+        };
+
+        function unlockAndLocate() {
+            document.getElementById('lock-screen').style.display = 'none';
+            renderMapMarkers(); renderJournal();
+            findMe(true); 
+        }
+
+        var map, currentLat = null, currentLon = null, userMarker = null;
+        var flagMarker = null, carMarker = null, flagLat = null, flagLon = null, carLat = null, carLon = null;
+
+        var layers = {
+            google: L.tileLayer('https://mt0.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}', {maxZoom: 20}),
+            topo: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {maxZoom: 18}),
+            military: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {maxZoom: 16}),
+            sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom: 18})
+        };
+        
+        var modes = [
+            {l: layers.google, n: "🗺️ МАПА: СУЧАСНА (GOOGLE)"},
+            {l: layers.topo, n: "⛰️ МАПА: ШВИДКА ТОПОГРАФІЯ"},
+            {l: layers.military, n: "🪖 МАПА: ВІЙСЬКОВИЙ АРХІВ"},
+            {l: layers.sat, n: "🛰️ МАПА: СУПУТНИК (ARCGIS)"}
+        ];
+        var curMode = 0;
+
+        map = L.map('map', {zoomControl: false, layers: [layers.google]}).setView([49.42, 27.00], 8);
+
+        function cycleMap() {
+            map.removeLayer(modes[curMode].l);
+            curMode = (curMode + 1) % modes.length;
+            map.addLayer(modes[curMode].l);
+            document.getElementById('btn-map-toggle').innerText = modes[curMode].n;
+        }
+
+        map.on('click', function(e) {
+            flagLat = e.latlng.lat; flagLon = e.latlng.lng;
+            if (!flagMarker) flagMarker = L.marker([flagLat, flagLon], { icon: L.divIcon({html: '🚩', className: 'flag-icon', iconSize: [35,35], iconAnchor: [17, 35]}) }).addTo(map);
+            else flagMarker.setLatLng([flagLat, flagLon]);
+            
+            document.getElementById('btn-add-past').style.display = 'block';
+            startNavigation(flagLat, flagLon, "Прапорець");
+        });
+
+        // Якщо мапу рухають мишкою (для тестів на ПК), перераховуємо радар
+        map.on('move', function() {
+            if (currentLat === null) updateRadar(); 
+        });
+
+        function findMe(centerMap = false) {
+            navigator.geolocation.watchPosition(function(pos) {
+                currentLat = pos.coords.latitude; currentLon = pos.coords.longitude;
+                var latlng = [currentLat, currentLon];
+                if (!userMarker) userMarker = L.circleMarker(latlng, {color: '#3498db', radius: 8, fillOpacity: 1}).addTo(map);
+                else userMarker.setLatLng(latlng);
+                updateRadar();
+                if(centerMap) { map.setView(latlng, 18); centerMap = false; }
+            }, null, { enableHighAccuracy: true });
+        }
+
+        function handleCarMarker() {
+            initCompass(); 
+            if (carMarker !== null) {
+                if (confirm("Точно видалити мітку паркування автомобіля?")) {
+                    map.removeLayer(carMarker); carMarker = null; carLat = null; carLon = null; closeRadar();
+                }
+            } else {
+                // Якщо тестуємо на ПК і GPS вимкнено, ставимо машину по центру мапи
+                carLat = currentLat !== null ? currentLat : map.getCenter().lat;
+                carLon = currentLon !== null ? currentLon : map.getCenter().lng;
+                
+                carMarker = L.marker([carLat, carLon], { icon: L.divIcon({html: '🚙', className: 'flag-icon', iconSize: [40,40], iconAnchor: [20, 40]}) }).addTo(map).on('click', () => startNavigation(carLat, carLon, "Автомобіль"));
+                alert("✅ Машину припарковано!"); startNavigation(carLat, carLon, "Автомобіль");
+            }
+        }
+
+        function startNavigation(lat, lon, label="Ціль") { 
+            initCompass(); 
+            targetCoords = {lat: lat, lon: lon, label: label}; 
+            document.getElementById('radar-panel').style.display = 'block'; 
+            updateRadar(); 
+        }
+        
+        function closeRadar() { document.getElementById('radar-panel').style.display = 'none'; targetCoords = null; }
+
+        function togglePowerSave() {
+            initCompass();
+            var ps = document.getElementById('power-save-screen');
+            ps.style.display = (ps.style.display === 'none' || ps.style.display === '') ? 'flex' : 'none';
+            try { if(ps.style.display === 'flex' && navigator.wakeLock) navigator.wakeLock.request('screen'); } catch(err) {}
+        }
+
+        function updateRadar() {
+            if (!targetCoords) return;
+
+            // ФІКС ДЛЯ ТЕСТУВАННЯ НА ПК: Якщо GPS немає, рахуємо від центру екрану
+            var originLat = currentLat !== null ? currentLat : map.getCenter().lat;
+            var originLon = currentLon !== null ? currentLon : map.getCenter().lng;
+
+            var dist = map.distance([originLat, originLon], [targetCoords.lat, targetCoords.lon]);
+            var y = Math.sin(deg2rad(targetCoords.lon - originLon)) * Math.cos(deg2rad(targetCoords.lat));
+            var x = Math.cos(deg2rad(originLat)) * Math.sin(deg2rad(targetCoords.lat)) - Math.sin(deg2rad(originLat)) * Math.cos(deg2rad(targetCoords.lat)) * Math.cos(deg2rad(targetCoords.lon - originLon));
+            var brng = (rad2deg(Math.atan2(y, x)) + 360) % 360; 
+            
+            var finalRotation = brng - deviceHeading; 
+            
+            document.getElementById('radar-arrow').style.transform = `rotate(${finalRotation}deg)`;
+            document.getElementById('ps-arrow').style.transform = `rotate(${finalRotation}deg)`;
+            document.getElementById('radar-info').innerText = `${targetCoords.label} | ${Math.round(dist)} м`;
+            document.getElementById('ps-info').innerText = `${Math.round(dist)} м`;
+        }
+
+        function deg2rad(deg) { return deg * (Math.PI/180); } function rad2deg(rad) { return rad * (180/Math.PI); }
+
+        document.getElementById('camera-input').addEventListener('change', function(e) {
+            var saveLat = currentLat !== null ? currentLat : map.getCenter().lat;
+            var saveLon = currentLon !== null ? currentLon : map.getCenter().lng;
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+                var newPoint = { id: Date.now(), lat: saveLat, lon: saveLon, date: new Date().toLocaleString('uk-UA'), photo: evt.target.result, ai_result: null };
+                var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); points.push(newPoint); localStorage.setItem('did_kop_offline_db', JSON.stringify(points)); location.reload();
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        document.getElementById('flag-camera-input').addEventListener('change', function(e) {
+            if (!flagLat) return alert("Спочатку поставте прапорець на мапі!");
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+                var newPoint = { id: Date.now(), lat: flagLat, lon: flagLon, date: new Date().toLocaleString('uk-UA'), photo: evt.target.result, ai_result: null };
+                var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); points.push(newPoint); localStorage.setItem('did_kop_offline_db', JSON.stringify(points)); location.reload();
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        function renderMapMarkers() {
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]');
+            points.forEach(p => { 
+                if(p && p.lat) {
+                    var thumbIcon = L.divIcon({ html: `<div class="map-thumb-container"><img src="${p.photo}"></div>`, className: '', iconSize: [50, 50], iconAnchor: [25, 25] });
+                    L.marker([p.lat, p.lon], {icon: thumbIcon}).addTo(map)
+                    .on('click', () => startNavigation(p.lat, p.lon, "Знахідка"))
+                    .bindPopup(`
+                        <img src="${p.photo}" style="width:140px; border-radius:5px;"><br>
+                        <button class="btn" style="background:#c0392b; padding:5px; margin-top:10px; width:100%; font-size:12px;" 
+                        onclick="deletePoint(${p.id})">🗑️ ВИДАЛИТИ ЗНАХІДКУ</button>
+                    `); 
+                }
+            });
+        }
+
+        function renderJournal() {
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); var listDiv = document.getElementById('journal-list');
+            if (points.length === 0) { listDiv.innerHTML = "<p>Немає знахідок.</p>"; return; }
+            var html = "";
+            points.reverse().forEach(p => {
+                html += `<div class="find-card"><img src="${p.photo}"><div class="find-info">📅 ${p.date}<br>📍 ${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}<br>`;
+                if (p.ai_result) html += `<div class="ai-result-text">🤖 ${p.ai_result}</div>`;
+                else html += `<button class="btn" style="background:#2980b9; padding:5px; margin-top:5px;" onclick="askAI(${p.id})">🧠 АНАЛІЗ</button>`;
+                html += `<button class="btn" style="background:#c0392b; padding:5px; margin-top:5px;" onclick="deletePoint(${p.id})">🗑️ ВИДАЛИТИ</button></div><div style="clear:both;"></div></div>`;
+            });
+            listDiv.innerHTML = html;
+        }
+
+        async function cacheLocalArea() {
+            var cacheLat = currentLat !== null ? currentLat : map.getCenter().lat;
+            var cacheLon = currentLon !== null ? currentLon : map.getCenter().lng;
+            if (!confirm("Програма збереже мапу навколо вас для роботи без інтернету (15 сек). Почати?")) return;
+            closeSettings(); var center = [cacheLat, cacheLon]; map.setView(center, 16);
+            document.getElementById('radar-panel').style.display = 'block';
+            var offsets = [[0,0],[0.01,0],[0.01,0.01],[0,0.01],[-0.01,0.01],[-0.01,0],[-0.01,-0.01],[0,-0.01],[0.01,-0.01]];
+            for (let i = 0; i < offsets.length; i++) {
+                map.panTo([center[0] + offsets[i][0], center[1] + offsets[i][1]], {animate: false});
+                document.getElementById('radar-info').innerText = `Кешування... ${Math.round(((i+1)/offsets.length)*100)}%`;
+                await new Promise(r => setTimeout(r, 1500)); 
+            }
+            alert("✅ Готово!"); closeRadar();
+        }
+
+        async function askAI(id) {
+            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) return alert("Ключ ШІ!");
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); var p = points.find(x => x.id === id);
+            var base64 = p.photo.split(',')[1];
+            var aiPrompt = `Ти - Дід Коп, археолог. Проаналізуй фото: що це, епоха, правитель, метал, ціна, чистка. ВЕЛИКИМИ ЛІТЕРАМИ.`;
+            try {
+                var res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }, { inline_data: { mime_type: "image/jpeg", data: base64 } }] }] }) });
+                var d = await res.json(); p.ai_result = d.candidates[0].content.parts[0].text; localStorage.setItem('did_kop_offline_db', JSON.stringify(points)); renderJournal();
+            } catch(e) { alert("Помилка ШІ!"); }
+        }
+
+        async function doRecon() {
+            var targetLat = flagLat || currentLat || map.getCenter().lat; 
+            var targetLon = flagLon || currentLon || map.getCenter().lng;
+            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) return alert("Потрібен ключ!");
+            document.getElementById('recon-modal').style.display = 'block'; document.getElementById('recon-content').innerHTML = "<h3 style='color:white; text-align:center; margin-top:50px;'>⏳ Дід Коп вивчає архіви...</h3>";
+            try {
+                var nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetLat}&lon=${targetLon}&accept-language=uk`);
+                var nomData = await nomRes.json(); var address = nomData.display_name || "Поле/Ліс";
+                var reconPrompt = `Ти - Дід Коп, напарник Юрія (58 років). Точка ${targetLat}, ${targetLon} (${address}). Опиши історію району, тракти, грунт. ВЕЛИКИМИ ЛІТЕРАМИ.`;
+                var res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: reconPrompt }] }] }) });
+                var d = await res.json(); document.getElementById('recon-content').innerHTML = `<h2>🛰️ Звіт Діда Копа</h2><p style="color:#aaa;">📍 ${address}</p><div class="recon-text">${d.candidates[0].content.parts[0].text}</div><button class="btn" style="background:#c0392b; width:100%; margin-top: 20px;" onclick="document.getElementById('recon-modal').style.display='none'">❌ ЗАКРИТИ</button>`;
+            } catch(e) { document.getElementById('recon-content').innerHTML = `<h3 style="color:red; text-align:center;">❌ Помилка розвідки</h3><button class="btn" style="background:#444; width:100%;" onclick="document.getElementById('recon-modal').style.display='none'">Закрити</button>`; }
+        }
+
+        function exportBackup() {
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); if(points.length === 0) return alert("Немає даних!");
+            var backupData = points.map(p => ({ id: p.id, lat: p.lat, lon: p.lon, date: p.date, photo: p.photo }));
+            var blob = new Blob([JSON.stringify(backupData)], {type: "application/json"});
+            var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Did_Kop_Backup.json`; link.click();
+        }
+
+        document.getElementById('backup-input').addEventListener('change', function(e) {
+            var reader = new FileReader(); reader.onload = function(evt) {
+                try {
+                    var data = JSON.parse(evt.target.result);
+                    if(confirm("Відновити дані з файлу? Це замінить поточну мапу.")) { localStorage.setItem('did_kop_offline_db', JSON.stringify(data)); location.reload(); }
+                } catch(err) { alert("❌ Помилка файлу"); }
+            }; reader.readAsText(e.target.files[0]);
+        });
+
+        function deletePoint(id) { if(confirm("Видалити цю знахідку?")) { var p = JSON.parse(localStorage.getItem('did_kop_offline_db')); p = p.filter(x => x.id !== id); localStorage.setItem('did_kop_offline_db', JSON.stringify(p)); location.reload(); } }
+        function emergencyReset() { if(confirm("Очистити все?")) { localStorage.clear(); location.reload(); } }
+        function toggleJournal() { var s = document.getElementById('journal-screen'); s.style.display = (s.style.display==='block'?'none':'block'); }
+        function openSettings() { document.getElementById('settings-modal').style.display='flex'; }
+        function closeSettings() { document.getElementById('settings-modal').style.display='none'; }
+        function saveApiKey() { localStorage.setItem('did_kop_api_key', document.getElementById('api-key-input').value); closeSettings(); alert("Збережено!"); }
+        
+        function exportHTMLReport() {
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); if(points.length === 0) return alert("Журнал порожній!");
+            var htmlContent = `<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><title>Архів Діда Копа</title><style>body { background-color: #111; color: #eee; font-family: 'Arial', sans-serif; padding: 40px; max-width: 1000px; margin: 0 auto; } h1 { color: #f39c12; text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; } .card { background-color: #222; border: 1px solid #444; border-radius: 12px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: flex-start; } .card img { max-width: 300px; border-radius: 10px; border: 2px solid #555; } .info { flex-grow: 1; } .date { color: #f39c12; font-size: 22px; font-weight: bold; margin-top: 0; } .coords { color: #aaa; font-size: 14px; margin-bottom: 15px; } .ai-text { background-color: #1a1a1a; padding: 20px; border-left: 5px solid #27ae60; border-radius: 8px; color: #4ade80; font-size: 18px; line-height: 1.5; white-space: pre-wrap; } .btn-map { display: inline-block; background-color: #2980b9; color: white; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px; } .btn-map:hover { background-color: #3498db; }</style></head><body><h1>📖 Офіційний Звіт "Дід Коп"</h1>`;
+            points.forEach(p => { if(!p) return; var mapLink = `https://www.google.com/maps/search/?api=1&query=$0{p.lat},${p.lon}`; var aiBlock = p.ai_result ? `<div class="ai-text"><b>🤖 Доповідь ШІ:</b><br><br>${p.ai_result}</div>` : `<p style="color:#888;">Експертиза не проводилась.</p>`; htmlContent += `<div class="card"><img src="${p.photo}" alt="Знахідка"><div class="info"><h2 class="date">📅 Дата: ${p.date}</h2><div class="coords">📍 Координати: ${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</div>${aiBlock}<a href="${mapLink}" target="_blank" class="btn-map">🗺️ ВІДКРИТИ МІСЦЕ В GOOGLE MAPS</a></div></div>`; });
+            htmlContent += `</body></html>`;
+            var blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Archive_Did_Kop.html`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
