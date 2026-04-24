@@ -16,16 +16,13 @@
         .bottom-panel { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 10px; width: 95%; max-width: 400px; }
         .btn { flex: 1; padding: 15px; font-size: 15px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         
-        /* ПАНЕЛЬ РАДАРА */
         #radar-panel { display: none; position: fixed; top: 65px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; background: rgba(0,0,0,0.9); border: 2px solid #f39c12; border-radius: 15px; padding: 15px; z-index: 3000; text-align: center; }
-        .compass-arrow { transition: transform 0.1s linear; margin: 0 auto 10px auto; display: block; transform-origin: center center; }
+        .compass-arrow { transition: transform 0.15s ease-out; margin: 0 auto 10px auto; display: block; transform-origin: center center; }
         #radar-info { font-size: 18px; font-weight: bold; color: #eee; margin-bottom: 10px; }
 
-        /* ЕКОНОМІЯ БАТАРЕЇ */
         #power-save-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         #ps-info { font-size: 50px; font-weight: bold; color: #f39c12; margin-top: 30px; font-family: monospace; }
 
-        /* КНОПКИ ЗЛІВА */
         #btn-recon { position: fixed; top: 70px; left: 15px; z-index: 1000; background: #8e44ad; color: white; border: 2px solid #9b59b6; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         #btn-add-past { display: none; position: fixed; top: 125px; left: 15px; z-index: 1000; background: #27ae60; color: white; border: 2px solid #2ecc71; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         #btn-map-toggle { position: fixed; top: 180px; left: 15px; z-index: 1000; background: #2c3e50; color: #f39c12; border: 2px solid #f39c12; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
@@ -143,27 +140,49 @@
     <script>
         var SECRET_PIN = "7777"; 
         var targetCoords = null;
+        
+        // ЗМІННІ ДЛЯ ТОЧНОГО КОМПАСА
         var deviceHeading = 0;
         var compassInitialized = false;
+        var hasAbsolute = false; // Перевірка для Android
 
-        // Ініціалізація компаса для мобільних
+        // НОВА, ЧИСТА ІНІЦІАЛІЗАЦІЯ КОМПАСА БЕЗ КОНФЛІКТІВ
         function initCompass() {
             if (compassInitialized) return;
+
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // Це iOS (iPhone)
                 DeviceOrientationEvent.requestPermission().then(state => {
-                    if (state === 'granted') { window.addEventListener('deviceorientation', handleOrientation, true); compassInitialized = true; }
+                    if (state === 'granted') {
+                        window.addEventListener('deviceorientation', function(e) {
+                            if (e.webkitCompassHeading) {
+                                deviceHeading = e.webkitCompassHeading;
+                                updateRadar();
+                            }
+                        }, true);
+                        compassInitialized = true;
+                    }
                 }).catch(console.error);
             } else {
-                window.addEventListener("deviceorientationabsolute", handleOrientationAbs, true);
-                window.addEventListener("deviceorientation", handleOrientation, true);
+                // Це Android та інші
+                // 1. Слухаємо АБСОЛЮТНИЙ компас (Справжня північ)
+                window.addEventListener("deviceorientationabsolute", function(e) {
+                    if (e.alpha !== null) {
+                        hasAbsolute = true;
+                        deviceHeading = 360 - e.alpha; // Математика Android для правильного напрямку
+                        updateRadar();
+                    }
+                }, true);
+                
+                // 2. Резервний варіант ТІЛЬКИ якщо абсолютного немає
+                window.addEventListener("deviceorientation", function(e) {
+                    if (!hasAbsolute && e.alpha !== null) {
+                        deviceHeading = 360 - e.alpha;
+                        updateRadar();
+                    }
+                }, true);
                 compassInitialized = true;
             }
-        }
-
-        function handleOrientationAbs(e) { if (e.alpha !== null) { deviceHeading = e.alpha; updateRadar(); } }
-        function handleOrientation(e) { 
-            if (e.webkitCompassHeading) { deviceHeading = e.webkitCompassHeading; updateRadar(); } 
-            else if (e.alpha !== null) { deviceHeading = 360 - e.alpha; updateRadar(); } 
         }
 
         function checkPin() {
@@ -218,10 +237,7 @@
             startNavigation(flagLat, flagLon, "Прапорець");
         });
 
-        // Якщо мапу рухають мишкою (для тестів на ПК), перераховуємо радар
-        map.on('move', function() {
-            if (currentLat === null) updateRadar(); 
-        });
+        map.on('move', function() { if (currentLat === null) updateRadar(); });
 
         function findMe(centerMap = false) {
             navigator.geolocation.watchPosition(function(pos) {
@@ -235,23 +251,21 @@
         }
 
         function handleCarMarker() {
-            initCompass(); 
+            initCompass(); // Активуємо компас
             if (carMarker !== null) {
                 if (confirm("Точно видалити мітку паркування автомобіля?")) {
                     map.removeLayer(carMarker); carMarker = null; carLat = null; carLon = null; closeRadar();
                 }
             } else {
-                // Якщо тестуємо на ПК і GPS вимкнено, ставимо машину по центру мапи
                 carLat = currentLat !== null ? currentLat : map.getCenter().lat;
                 carLon = currentLon !== null ? currentLon : map.getCenter().lng;
-                
                 carMarker = L.marker([carLat, carLon], { icon: L.divIcon({html: '🚙', className: 'flag-icon', iconSize: [40,40], iconAnchor: [20, 40]}) }).addTo(map).on('click', () => startNavigation(carLat, carLon, "Автомобіль"));
                 alert("✅ Машину припарковано!"); startNavigation(carLat, carLon, "Автомобіль");
             }
         }
 
         function startNavigation(lat, lon, label="Ціль") { 
-            initCompass(); 
+            initCompass(); // Активуємо компас
             targetCoords = {lat: lat, lon: lon, label: label}; 
             document.getElementById('radar-panel').style.display = 'block'; 
             updateRadar(); 
@@ -269,7 +283,6 @@
         function updateRadar() {
             if (!targetCoords) return;
 
-            // ФІКС ДЛЯ ТЕСТУВАННЯ НА ПК: Якщо GPS немає, рахуємо від центру екрану
             var originLat = currentLat !== null ? currentLat : map.getCenter().lat;
             var originLon = currentLon !== null ? currentLon : map.getCenter().lng;
 
@@ -280,6 +293,8 @@
             
             var finalRotation = brng - deviceHeading; 
             
+            if(!compassInitialized && location.protocol !== 'https:') finalRotation = brng;
+
             document.getElementById('radar-arrow').style.transform = `rotate(${finalRotation}deg)`;
             document.getElementById('ps-arrow').style.transform = `rotate(${finalRotation}deg)`;
             document.getElementById('radar-info').innerText = `${targetCoords.label} | ${Math.round(dist)} м`;
