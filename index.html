@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Дід Коп: Чат + ПРО Пінпоінтер</title>
+    <title>Дід Коп: Мультимовний</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -24,19 +24,17 @@
         #ps-info { font-size: 50px; font-weight: bold; color: #f39c12; margin-top: 30px; font-family: monospace; }
         .ps-hint { color: #555; font-size: 14px; margin-top: 40px; text-align: center; padding: 0 20px; }
 
-        /* КНОПКА ВИКЛИКУ ПІНПОІНТЕРА НА МАПІ */
+        /* КНОПКА ВИКЛИКУ ПІНПОІНТЕРА */
         #btn-pinpointer-call { position: fixed; top: 70px; right: 15px; z-index: 1000; background: #8e44ad; color: white; border: 2px solid #9b59b6; padding: 12px; border-radius: 50px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: background 0.3s; }
         
-        /* НОВИЙ ОКРЕМИЙ ЕКРАН ПІНПОІНТЕРА */
+        /* ЕКРАН ПІНПОІНТЕРА */
         #pinpointer-modal { display: none; position: fixed; top: 55px; left: 0; right: 0; bottom: 0; background: #111; z-index: 2600; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .pp-header { width: 100%; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #9b59b6; padding-bottom: 15px; margin-bottom: 30px; }
         .pp-title { color: #9b59b6; font-size: 20px; font-weight: bold; }
         .pp-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-        
         .pp-value-container { background: #222; border: 4px solid #444; border-radius: 50%; width: 220px; height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 0 30px rgba(0,0,0,0.8); transition: border-color 0.1s; margin-bottom: 40px; }
         .pp-value { font-size: 70px; font-weight: bold; color: #2ecc71; font-family: monospace; }
         .pp-label { font-size: 16px; color: #aaa; letter-spacing: 3px; font-weight: bold; margin-top: 10px; }
-        
         .pp-slider-wrapper { width: 100%; max-width: 400px; background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid #333; box-sizing: border-box; }
         .pp-slider-wrapper label { display: block; color: #f39c12; font-weight: bold; margin-bottom: 20px; text-align: center; font-size: 18px; }
         input[type="range"] { width: 100%; accent-color: #e74c3c; transform: scale(1.2); }
@@ -53,9 +51,13 @@
         .ai-result-text { font-size: 18px; line-height: 1.5; color: #4ade80; margin-top: 15px; white-space: pre-wrap; background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #27ae60; }
         .recon-text { font-size: 18px; line-height: 1.5; color: #f1c40f; margin-top: 15px; white-space: pre-wrap; background: #222; padding: 15px; border-radius: 8px; border-left: 4px solid #f39c12; }
 
-        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .pin-input { font-size: 40px; letter-spacing: 15px; width: 180px; text-align: center; font-weight: bold; background: #222; color: #f39c12; border: 2px solid #555; border-radius: 10px; padding: 15px; margin-bottom: 25px; }
-        .pin-btn { background: #27ae60; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        /* МОВНИЙ ЕКРАН */
+        #lang-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .lang-title { color: #f39c12; font-size: 32px; font-weight: bold; margin-bottom: 40px; text-align: center; }
+        .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 90%; max-width: 400px; }
+        .lang-btn { background: #222; border: 2px solid #444; border-radius: 15px; padding: 20px; font-size: 20px; color: white; cursor: pointer; font-weight: bold; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+        .lang-btn:active { background: #d35400; border-color: #f39c12; }
+        .lang-btn span { font-size: 40px; margin-bottom: 10px; }
         
         .find-card { background: #222; border: 1px solid #444; border-radius: 10px; padding: 15px; margin-bottom: 15px; position: relative; clear: both; overflow: hidden; }
         .find-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; float: left; margin-right: 15px; }
@@ -81,44 +83,44 @@
 </head>
 <body>
 
-    <div id="lock-screen">
-        <h1 style="color: #d35400;">ДІД КОП 105</h1>
-        <p style="color: #aaa;">Введіть пароль</p>
-        <input type="password" id="pin-code" class="pin-input" maxlength="4" pattern="\d*">
-        <button class="pin-btn" onclick="checkPin()">УВІЙТИ</button>
+    <div id="lang-screen">
+        <div class="lang-title">Choose Language</div>
+        <div class="lang-grid">
+            <button class="lang-btn" onclick="selectLang('uk')"><span>🇺🇦</span>Українська</button>
+            <button class="lang-btn" onclick="selectLang('en')"><span>🇬🇧</span>English</button>
+            <button class="lang-btn" onclick="selectLang('pl')"><span>🇵🇱</span>Polski</button>
+            <button class="lang-btn" onclick="selectLang('de')"><span>🇩🇪</span>Deutsch</button>
+            <button class="lang-btn" onclick="selectLang('fr')"><span>🇫🇷</span>Français</button>
+            <button class="lang-btn" onclick="selectLang('pt')"><span>🇵🇹</span>Português</button>
+        </div>
     </div>
 
     <button id="btn-pinpointer-call" onclick="togglePinpointer()">🧲 ПІНПОІНТЕР</button>
 
     <div id="pinpointer-modal">
         <div class="pp-header">
-            <span class="pp-title">🧲 ПРО-ПІНПОІНТЕР</span>
+            <span class="pp-title" id="ui-pp-title">🧲 ПРО-ПІНПОІНТЕР</span>
             <button class="pp-close" onclick="togglePinpointer()">❌</button>
         </div>
         
         <div class="pp-value-container" id="pp-ring">
             <div class="pp-value" id="pp-val-text">0</div>
-            <div class="pp-label">АНОМАЛІЯ</div>
+            <div class="pp-label" id="ui-pp-anomaly">АНОМАЛІЯ</div>
         </div>
 
         <div class="pp-slider-wrapper">
-            <label>ЧУТЛИВІСТЬ: <span id="sens-display">0.5</span></label>
+            <label><span id="ui-pp-sens">ЧУТЛИВІСТЬ</span>: <span id="sens-display">0.5</span></label>
             <input type="range" id="sens-slider" min="0.1" max="2" step="0.1" value="0.5" oninput="document.getElementById('sens-display').innerText=this.value">
-            <p style="color:#888; font-size:13px; text-align:center; margin-top:20px; line-height:1.5;">
-                👉 Якщо пищить на рух — тягніть вліво.<br>
-                👉 Якщо слабкий сигнал — тягніть вправо.<br>
-                <i>Водіть телефоном плавно над ямкою.</i>
-            </p>
         </div>
     </div>
 
     <div id="power-save-screen" ondblclick="togglePowerSave()">
-        <div id="ps-vibro-status" style="color:#e74c3c; font-size:20px; font-weight:bold; display:none; margin-bottom:20px;">📳 ПОВОДИР АКТИВНИЙ</div>
+        <div id="ps-vibro-status" style="color:#e74c3c; font-size:20px; font-weight:bold; display:none; margin-bottom:20px;" id="ui-vibro-active">📳 ПОВОДИР АКТИВНИЙ</div>
         <svg id="ps-arrow" class="compass-arrow" viewBox="0 0 100 200" style="width: 100px; height: 200px;">
             <polygon points="50,0 80,100 50,110 20,100" fill="#e74c3c"/><polygon points="50,0 50,110 20,100" fill="#c0392b"/><polygon points="50,200 80,100 50,110 20,100" fill="#bdc3c7"/><polygon points="50,200 50,110 20,100" fill="#7f8c8d"/>
         </svg>
         <div id="ps-info">0 м</div>
-        <div class="ps-hint">ЕКРАН В РЕЖИМІ OLED-ЕКОНОМІЇ.<br>ДВІЧІ ТОРКНІТЬСЯ ЕКРАНУ, ЩОБ ПОВЕРНУТИСЬ.</div>
+        <div class="ps-hint" id="ui-oled-hint">ЕКРАН В РЕЖИМІ OLED-ЕКОНОМІЇ.<br>ДВІЧІ ТОРКНІТЬСЯ ЕКРАНУ, ЩОБ ПОВЕРНУТИСЬ.</div>
     </div>
 
     <div id="radar-panel">
@@ -127,13 +129,13 @@
         </svg>
         <div id="radar-info">Напрямок | 0 м</div>
         
-        <button id="btn-guide" class="btn" style="background:#555; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="toggleGuideMode()">📳 ВІБРО-ПОВОДИР</button>
-        <button class="btn" style="background:#27ae60; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="togglePowerSave()">🌙 OLED ЕКОНОМІЯ</button>
-        <div style="color:#aaa; font-size:12px; margin-top:10px; cursor:pointer;" onclick="closeRadar()">❌ ЗАКРИТИ РАДАР</div>
+        <button id="btn-guide" class="btn" style="background:#555; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="toggleGuideMode()" id="ui-btn-vibro">📳 ВІБРО-ПОВОДИР</button>
+        <button class="btn" style="background:#27ae60; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="togglePowerSave()" id="ui-btn-oled">🌙 OLED ЕКОНОМІЯ</button>
+        <div style="color:#aaa; font-size:12px; margin-top:10px; cursor:pointer;" onclick="closeRadar()" id="ui-btn-close">❌ ЗАКРИТИ РАДАР</div>
     </div>
 
     <div class="top-bar">
-        <button onclick="toggleChat()" style="background:#d35400; color:white; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:15px; box-shadow:0 2px 5px rgba(0,0,0,0.5);">📻 ЧАТ З ДІДОМ</button>
+        <button onclick="toggleChat()" id="ui-btn-chat" style="background:#d35400; color:white; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:15px; box-shadow:0 2px 5px rgba(0,0,0,0.5);">📻 ЧАТ З ДІДОМ</button>
         <div>
             <button onclick="toggleJournal()" style="background:none; border:none; color:white; font-size:22px; margin-right: 10px;">📖</button>
             <button onclick="openSettings()" style="background:none; border:none; color:white; font-size:22px;">⚙️</button>
@@ -142,55 +144,56 @@
 
     <div id="chat-modal">
         <div class="chat-header">
-            <span>📻 Рація: Дід Коп</span>
+            <span id="ui-chat-title">📻 Рація: Дід Коп</span>
             <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:20px;">❌</button>
         </div>
         <div id="chat-messages">
-            <div class="msg ai-msg">Здоров, внучку! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!</div>
+            <div class="msg ai-msg" id="ui-chat-welcome">Здоров, внучку! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!</div>
         </div>
         <div class="chat-input-area">
             <button class="chat-btn-photo" onclick="document.getElementById('chat-photo-input').click()">📸</button>
             <input type="text" id="chat-input-text" placeholder="Запитай діда...">
-            <button class="chat-btn-send" onclick="sendChatMessage()">ПРИЙОМ</button>
+            <button class="chat-btn-send" onclick="sendChatMessage()" id="ui-chat-send">ПРИЙОМ</button>
         </div>
     </div>
 
     <button id="btn-recon" onclick="doRecon()">🛰️ РОЗВІДКА</button>
     <button id="btn-add-past" onclick="document.getElementById('flag-camera-input').click()">📍 ДОДАТИ МИНУЛЕ</button>
-    <button id="btn-map-toggle" onclick="cycleMap()">🗺️ МАПА: СУЧАСНА (GOOGLE)</button>
+    <button id="btn-map-toggle" onclick="cycleMap()">🗺️ МАПА: СУЧАСНА</button>
 
     <div id="map"></div>
 
     <div class="bottom-panel" id="main-buttons">
-        <button class="btn" style="background-color: #d35400; flex: 0.4; font-size: 20px;" onclick="handleCarMarker()">🚗</button>
-        <button class="btn" style="background-color: #2980b9;" onclick="findMe(true)">📍 ПРИЦІЛ</button>
-        <button class="btn" style="background-color: #27ae60;" onclick="document.getElementById('camera-input').click()">📸 ФОТО</button>
+        <button class="btn" style="background-color: #d35400; flex: 0.4; font-size: 20px;" onclick="handleCarMarker()" id="ui-btn-car">🚗</button>
+        <button class="btn" style="background-color: #2980b9;" onclick="findMe(true)" id="ui-btn-target">📍 ПРИЦІЛ</button>
+        <button class="btn" style="background-color: #27ae60;" onclick="document.getElementById('camera-input').click()" id="ui-btn-photo">📸 ФОТО</button>
     </div>
 
     <div id="recon-modal"><div id="recon-content" style="padding-bottom: 30px;"></div></div>
 
     <div id="journal-screen">
-        <h2 style="margin-top: 0;">Мій Журнал Знахідок</h2>
-        <button class="btn" style="background: #27ae60; width:100%; margin-bottom: 15px;" onclick="exportHTMLReport()">📋 ЗАВАНТАЖИТИ HTML-ЗВІТ</button>
+        <h2 style="margin-top: 0;" id="ui-journal-title">Мій Журнал Знахідок</h2>
+        <button class="btn" style="background: #27ae60; width:100%; margin-bottom: 15px;" onclick="exportHTMLReport()" id="ui-btn-report">📋 ЗАВАНТАЖИТИ HTML-ЗВІТ</button>
         <hr>
         <div id="journal-list"></div>
     </div>
 
     <div id="settings-modal">
         <div class="modal-content">
-            <h3>🤖 Налаштування ШІ</h3>
-            <input type="text" id="api-key-input" placeholder="Ключ Gemini">
-            <button class="btn" style="background:#2980b9; width:100%; margin-bottom:10px;" onclick="saveApiKey()">💾 ЗБЕРЕГТИ КЛЮЧ</button>
+            <h3 id="ui-set-ai">🤖 Налаштування ШІ</h3>
+            <input type="text" id="api-key-input" placeholder="Gemini API Key">
+            <button class="btn" style="background:#2980b9; width:100%; margin-bottom:10px;" onclick="saveApiKey()" id="ui-btn-savekey">💾 ЗБЕРЕГТИ КЛЮЧ</button>
             <hr>
-            <h3>🗺️ Офлайн Мапа</h3>
-            <button class="btn" style="background:#f39c12; width:100%; margin-bottom:10px;" onclick="cacheLocalArea()">📥 КЕШУВАТИ МАПУ (2х2 км)</button>
+            <h3 id="ui-set-map">🗺️ Офлайн Мапа</h3>
+            <button class="btn" style="background:#f39c12; width:100%; margin-bottom:10px;" onclick="cacheLocalArea()" id="ui-btn-cache">📥 КЕШУВАТИ МАПУ (2х2 км)</button>
             <hr>
-            <h3>🗄️ Резервна копія</h3>
-            <button class="btn" style="background:#27ae60; width:100%; margin-bottom:10px;" onclick="exportBackup()">💾 ЗБЕРЕГТИ БЕКАП (.json)</button>
-            <button class="btn" style="background:#8e44ad; width:100%; margin-bottom:10px;" onclick="document.getElementById('backup-input').click()">📂 ВІДНОВИТИ З ФАЙЛУ</button>
+            <h3 id="ui-set-backup">🗄️ Резервна копія</h3>
+            <button class="btn" style="background:#27ae60; width:100%; margin-bottom:10px;" onclick="exportBackup()" id="ui-btn-backup">💾 ЗБЕРЕГТИ БЕКАП (.json)</button>
+            <button class="btn" style="background:#8e44ad; width:100%; margin-bottom:10px;" onclick="document.getElementById('backup-input').click()" id="ui-btn-restore">📂 ВІДНОВИТИ З ФАЙЛУ</button>
             <hr>
-            <button class="btn" style="background:red; color:white; width:100%; margin-bottom:10px;" onclick="emergencyReset()">🚨 ПОВНЕ СКИДАННЯ</button>
-            <button class="btn" style="background:#444; width:100%;" onclick="closeSettings()">ЗАКРИТИ</button>
+            <button class="btn" style="background:#555; color:white; width:100%; margin-bottom:10px;" onclick="changeLanguage()" id="ui-btn-lang">🌍 ЗМІНИТИ МОВУ</button>
+            <button class="btn" style="background:red; color:white; width:100%; margin-bottom:10px;" onclick="emergencyReset()" id="ui-btn-reset">🚨 ПОВНЕ СКИДАННЯ</button>
+            <button class="btn" style="background:#444; width:100%;" onclick="closeSettings()" id="ui-btn-closestg">ЗАКРИТИ</button>
         </div>
     </div>
 
@@ -200,18 +203,165 @@
     <input type="file" id="chat-photo-input" accept="image/*" style="display: none;">
 
     <script>
-        var SECRET_PIN = "7777"; 
+        // ==========================================
+        // СЛОВНИК МУЛЬТИМОВНОСТІ
+        // ==========================================
+        var currentLang = 'uk';
+        const i18n = {
+            uk: {
+                pinpointer: "🧲 ПІНПОІНТЕР", anomaly: "АНОМАЛІЯ", sens: "ЧУТЛИВІСТЬ",
+                chatBtn: "📻 ЧАТ З ДІДОМ", reconBtn: "🛰️ РОЗВІДКА", addPastBtn: "📍 ДОДАТИ МИНУЛЕ",
+                mapGoogle: "🗺️ МАПА (СУЧАСНА)", mapTopo: "⛰️ МАПА (ТОПО)", mapMil: "🪖 МАПА (АРХІВ)", mapSat: "🛰️ МАПА (СУПУТНИК)",
+                targetBtn: "📍 ПРИЦІЛ", photoBtn: "📸 ФОТО",
+                chatTitle: "📻 Рація: Дід Коп", chatWelcome: "Здоров, внучку! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!", chatSend: "ПРИЙОМ", chatPlaceholder: "Запитай діда...",
+                journalTitle: "Мій Журнал Знахідок", reportBtn: "📋 ЗАВАНТАЖИТИ ЗВІТ", deleteBtn: "🗑️ ВИДАЛИТИ", analyzeBtn: "🧠 АНАЛІЗ",
+                setAi: "🤖 Налаштування ШІ", saveKeyBtn: "💾 ЗБЕРЕГТИ КЛЮЧ", setMap: "🗺️ Офлайн Мапа", cacheBtn: "📥 КЕШУВАТИ МАПУ (2х2 км)",
+                setBackup: "🗄️ Резервна копія", backupBtn: "💾 ЗБЕРЕГТИ БЕКАП", restoreBtn: "📂 ВІДНОВИТИ З ФАЙЛУ", langBtn: "🌍 ЗМІНИТИ МОВУ", resetBtn: "🚨 ПОВНЕ СКИДАННЯ", closeBtn: "ЗАКРИТИ",
+                vibroBtn: "📳 ВІБРО-ПОВОДИР", oledBtn: "🌙 OLED ЕКОНОМІЯ", closeRadarBtn: "❌ ЗАКРИТИ РАДАР", oledHint: "ЕКРАН В РЕЖИМІ OLED-ЕКОНОМІЇ.<br>ДВІЧІ ТОРКНІТЬСЯ ЕКРАНУ.",
+                aiPromptRole: "Ти - Дід Коп, легендарний шукач артефактів та археолог. Твій напарник - Юрій (58 років). Відповідай УКРАЇНСЬКОЮ мовою. Питання/Запит: ",
+                aiPromptPhoto: "Ти - Дід Коп. Проаналізуй фото: що це, епоха, метал, ціна. Відповідай УКРАЇНСЬКОЮ мовою ВЕЛИКИМИ ЛІТЕРАМИ.",
+                aiPromptRecon: "Ти - Дід Коп. Опиши історію цього району, тракти, грунт. Відповідай УКРАЇНСЬКОЮ мовою ВЕЛИКИМИ ЛІТЕРАМИ."
+            },
+            en: {
+                pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALY", sens: "SENSITIVITY",
+                chatBtn: "📻 CHAT WITH GRANDPA", reconBtn: "🛰️ RECON", addPastBtn: "📍 ADD PAST",
+                mapGoogle: "🗺️ MAP (MODERN)", mapTopo: "⛰️ MAP (TOPO)", mapMil: "🪖 MAP (ARCHIVE)", mapSat: "🛰️ MAP (SATELLITE)",
+                targetBtn: "📍 TARGET", photoBtn: "📸 PHOTO",
+                chatTitle: "📻 Radio: Grandpa Digger", chatWelcome: "Hello, grandson! Ask me anything about detecting, history, or relics. Or drop a photo, and I'll help you out!", chatSend: "OVER", chatPlaceholder: "Ask Grandpa...",
+                journalTitle: "My Finds Journal", reportBtn: "📋 DOWNLOAD REPORT", deleteBtn: "🗑️ DELETE", analyzeBtn: "🧠 ANALYZE",
+                setAi: "🤖 AI Settings", saveKeyBtn: "💾 SAVE KEY", setMap: "🗺️ Offline Map", cacheBtn: "📥 CACHE MAP (2x2 km)",
+                setBackup: "🗄️ Backup", backupBtn: "💾 SAVE BACKUP", restoreBtn: "📂 RESTORE FROM FILE", langBtn: "🌍 CHANGE LANGUAGE", resetBtn: "🚨 FULL RESET", closeBtn: "CLOSE",
+                vibroBtn: "📳 VIBRO-GUIDE", oledBtn: "🌙 OLED SAVER", closeRadarBtn: "❌ CLOSE RADAR", oledHint: "SCREEN IN OLED SAVER MODE.<br>DOUBLE TAP TO RETURN.",
+                aiPromptRole: "You are Grandpa Digger, a legendary metal detectorist and archaeologist. Your partner is Yuriy (58). Respond in ENGLISH. Query: ",
+                aiPromptPhoto: "You are Grandpa Digger. Analyze the photo: what is it, era, metal, value. Respond in ENGLISH using UPPERCASE.",
+                aiPromptRecon: "You are Grandpa Digger. Describe the history of this area, old roads, soil. Respond in ENGLISH using UPPERCASE."
+            },
+            pl: {
+                pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIA", sens: "CZUŁOŚĆ",
+                chatBtn: "📻 CZAT Z DZIADKIEM", reconBtn: "🛰️ ZWIAD", addPastBtn: "📍 DODAJ PRZESZŁOŚĆ",
+                mapGoogle: "🗺️ MAPA (WSPÓŁCZESNA)", mapTopo: "⛰️ MAPA (TOPO)", mapMil: "🪖 MAPA (ARCHIWUM)", mapSat: "🛰️ MAPA (SATELITA)",
+                targetBtn: "📍 CEL", photoBtn: "📸 ZDJĘCIE",
+                chatTitle: "📻 Radio: Dziadek Kopacz", chatWelcome: "Witaj, wnuczku! Pytaj o wykopki, historię i relikty. Albo wrzuć zdjęcie, a ci podpowiem!", chatSend: "ODBIÓR", chatPlaceholder: "Zapytaj Dziadka...",
+                journalTitle: "Mój Dziennik Znalezisk", reportBtn: "📋 POBIERZ RAPORT", deleteBtn: "🗑️ USUŃ", analyzeBtn: "🧠 ANALIZA",
+                setAi: "🤖 Ustawienia AI", saveKeyBtn: "💾 ZAPISZ KLUCZ", setMap: "🗺️ Mapa Offline", cacheBtn: "📥 POBIERZ MAPĘ (2x2 km)",
+                setBackup: "🗄️ Kopia zapasowa", backupBtn: "💾 ZAPISZ KOPIĘ", restoreBtn: "📂 PRZYWRÓĆ Z PLIKU", langBtn: "🌍 ZMIEŃ JĘZYK", resetBtn: "🚨 PEŁNY RESET", closeBtn: "ZAMKNIJ",
+                vibroBtn: "📳 WIBRO-PRZEWODNIK", oledBtn: "🌙 OSZCZĘDZANIE OLED", closeRadarBtn: "❌ ZAMKNIJ RADAR", oledHint: "EKRAN W TRYBIE OSZCZĘDZANIA.<br>DOTKNIJ DWA RAZY ABY WRÓCIĆ.",
+                aiPromptRole: "Jesteś Dziadek Kopacz, legendarny poszukiwacz skarbów. Twój partner to Yuriy (58). Odpowiadaj w języku POLSKIM. Zapytanie: ",
+                aiPromptPhoto: "Jesteś Dziadek Kopacz. Przeanalizuj zdjęcie: co to jest, epoka, metal, wartość. Odpowiadaj po POLSKU, używaj WIELKICH LITER.",
+                aiPromptRecon: "Jesteś Dziadek Kopacz. Opisz historię tego obszaru, stare drogi, glebę. Odpowiadaj po POLSKU, używaj WIELKICH LITER."
+            },
+            de: {
+                pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIE", sens: "EMPFINDLICHKEIT",
+                chatBtn: "📻 CHAT MIT OPA", reconBtn: "🛰️ AUFKLÄRUNG", addPastBtn: "📍 VERGANGENHEIT HINZUFÜGEN",
+                mapGoogle: "🗺️ KARTE (MODERN)", mapTopo: "⛰️ KARTE (TOPO)", mapMil: "🪖 KARTE (ARCHIV)", mapSat: "🛰️ KARTE (SAT)",
+                targetBtn: "📍 ZIEL", photoBtn: "📸 FOTO",
+                chatTitle: "📻 Funk: Opa Sondler", chatWelcome: "Hallo Enkel! Frag mich alles über das Sondeln. Oder zeig mir ein Foto deines Fundes!", chatSend: "ENDE", chatPlaceholder: "Frag Opa...",
+                journalTitle: "Mein Fundtagebuch", reportBtn: "📋 BERICHT HERUNTERLADEN", deleteBtn: "🗑️ LÖSCHEN", analyzeBtn: "🧠 ANALYSIEREN",
+                setAi: "🤖 KI-Einstellungen", saveKeyBtn: "💾 SCHLÜSSEL SPEICHERN", setMap: "🗺️ Offline-Karte", cacheBtn: "📥 KARTE SPEICHERN (2x2 km)",
+                setBackup: "🗄️ Backup", backupBtn: "💾 BACKUP SPEICHERN", restoreBtn: "📂 AUS DATEI WIEDERHERSTELLEN", langBtn: "🌍 SPRACHE ÄNDERN", resetBtn: "🚨 VOLLSTÄNDIGER RESET", closeBtn: "SCHLIEßEN",
+                vibroBtn: "📳 VIBRO-GUIDE", oledBtn: "🌙 OLED-SPARMODUS", closeRadarBtn: "❌ RADAR SCHLIEßEN", oledHint: "BILDSCHIRM IM SPARMODUS.<br>DOPPELT TIPPEN ZURÜCK.",
+                aiPromptRole: "Du bist Opa Sondler, ein legendärer Schatzsucher. Dein Partner ist Yuriy (58). Antworte auf DEUTSCH. Anfrage: ",
+                aiPromptPhoto: "Du bist Opa Sondler. Analysiere das Foto: was ist es, Epoche, Metall, Wert. Antworte auf DEUTSCH in GROSSBUCHSTABEN.",
+                aiPromptRecon: "Du bist Opa Sondler. Beschreibe die Geschichte dieser Gegend. Antworte auf DEUTSCH in GROSSBUCHSTABEN."
+            },
+            fr: {
+                pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIE", sens: "SENSIBILITÉ",
+                chatBtn: "📻 PARLER À PAPY", reconBtn: "🛰️ RECONNAISSANCE", addPastBtn: "📍 AJOUTER LE PASSÉ",
+                mapGoogle: "🗺️ CARTE (MODERNE)", mapTopo: "⛰️ CARTE (TOPO)", mapMil: "🪖 CARTE (ARCHIVES)", mapSat: "🛰️ CARTE (SATELLITE)",
+                targetBtn: "📍 CIBLE", photoBtn: "📸 PHOTO",
+                chatTitle: "📻 Radio: Papy Détecteur", chatWelcome: "Salut, petit-fils ! Demande-moi tout sur la détection. Ou montre-moi une photo !", chatSend: "À VOUS", chatPlaceholder: "Demander à Papy...",
+                journalTitle: "Mon Journal de Découvertes", reportBtn: "📋 TÉLÉCHARGER LE RAPPORT", deleteBtn: "🗑️ SUPPRIMER", analyzeBtn: "🧠 ANALYSER",
+                setAi: "🤖 Paramètres IA", saveKeyBtn: "💾 ENREGISTRER LA CLÉ", setMap: "🗺️ Carte Hors-Ligne", cacheBtn: "📥 TÉLÉCHARGER CARTE (2x2 km)",
+                setBackup: "🗄️ Sauvegarde", backupBtn: "💾 CRÉER SAUVEGARDE", restoreBtn: "📂 RESTAURER DEPUIS FICHIER", langBtn: "🌍 CHANGER DE LANGUE", resetBtn: "🚨 RÉINITIALISATION COMPLÈTE", closeBtn: "FERMER",
+                vibroBtn: "📳 GUIDE VIBREUR", oledBtn: "🌙 ÉCONOMIE OLED", closeRadarBtn: "❌ FERMER LE RADAR", oledHint: "ÉCRAN EN MODE ÉCONOMIE.<br>DOUBLE TAPE POUR REVENIR.",
+                aiPromptRole: "Tu es Papy Détecteur, un chercheur de trésors légendaire. Ton partenaire est Yuriy (58 ans). Réponds en FRANÇAIS. Requête: ",
+                aiPromptPhoto: "Tu es Papy Détecteur. Analyse la photo : quoi, époque, métal, valeur. Réponds en FRANÇAIS en MAJUSCULES.",
+                aiPromptRecon: "Tu es Papy Détecteur. Décris l'histoire de cette zone, les anciennes routes. Réponds en FRANÇAIS en MAJUSCULES."
+            },
+            pt: {
+                pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIA", sens: "SENSIBILIDADE",
+                chatBtn: "📻 FALAR COM VOVÔ", reconBtn: "🛰️ RECONHECIMENTO", addPastBtn: "📍 ADICIONAR PASSADO",
+                mapGoogle: "🗺️ MAPA (MODERNO)", mapTopo: "⛰️ MAPA (TOPO)", mapMil: "🪖 MAPA (ARQUIVO)", mapSat: "🛰️ MAPA (SATÉLITE)",
+                targetBtn: "📍 ALVO", photoBtn: "📸 FOTO",
+                chatTitle: "📻 Rádio: Vovô Detector", chatWelcome: "Olá, neto! Pergunte-me qualquer coisa sobre detecção de metais ou envie uma foto do achado!", chatSend: "CÂMBIO", chatPlaceholder: "Perguntar ao Vovô...",
+                journalTitle: "Meu Diário de Achados", reportBtn: "📋 BAIXAR RELATÓRIO", deleteBtn: "🗑️ APAGAR", analyzeBtn: "🧠 ANALISAR",
+                setAi: "🤖 Configurações de IA", saveKeyBtn: "💾 SALVAR CHAVE", setMap: "🗺️ Mapa Offline", cacheBtn: "📥 BAIXAR MAPA (2x2 km)",
+                setBackup: "🗄️ Backup", backupBtn: "💾 SALVAR BACKUP", restoreBtn: "📂 RESTAURAR DE ARQUIVO", langBtn: "🌍 MUDAR IDIOMA", resetBtn: "🚨 RESET TOTAL", closeBtn: "FECHAR",
+                vibroBtn: "📳 GUIA VIBRATÓRIO", oledBtn: "🌙 ECONOMIA OLED", closeRadarBtn: "❌ FECHAR RADAR", oledHint: "TELA EM MODO DE ECONOMIA.<br>TOQUE DUPLO PARA VOLTAR.",
+                aiPromptRole: "Você é o Vovô Detector, um lendário caçador de tesouros. Seu parceiro é Yuriy (58). Responda em PORTUGUÊS. Pergunta: ",
+                aiPromptPhoto: "Você é o Vovô Detector. Analise a foto: o que é, época, metal, valor. Responda em PORTUGUÊS usando MAIÚSCULAS.",
+                aiPromptRecon: "Você é o Vovô Detector. Descreva a história desta área, estradas antigas. Responda em PORTUGUÊS usando MAIÚSCULAS."
+            }
+        };
+
+        function selectLang(lang) {
+            localStorage.setItem('did_kop_lang', lang);
+            document.getElementById('lang-screen').style.display = 'none';
+            applyLanguage();
+            renderMapMarkers(); renderJournal(); findMe(true); 
+        }
+
+        function changeLanguage() {
+            closeSettings();
+            document.getElementById('lang-screen').style.display = 'flex';
+        }
+
+        function applyLanguage() {
+            currentLang = localStorage.getItem('did_kop_lang') || 'uk';
+            var d = i18n[currentLang];
+            
+            document.getElementById('btn-pinpointer-call').innerText = d.pinpointer;
+            document.getElementById('ui-pp-title').innerText = d.pinpointer;
+            document.getElementById('ui-pp-anomaly').innerText = d.anomaly;
+            document.getElementById('ui-pp-sens').innerText = d.sens;
+            document.getElementById('ui-btn-chat').innerText = d.chatBtn;
+            document.getElementById('btn-recon').innerText = d.reconBtn;
+            document.getElementById('btn-add-past').innerText = d.addPastBtn;
+            document.getElementById('ui-btn-target').innerText = d.targetBtn;
+            document.getElementById('ui-btn-photo').innerText = d.photoBtn;
+            document.getElementById('ui-chat-title').innerText = d.chatTitle;
+            document.getElementById('ui-chat-welcome').innerText = d.chatWelcome;
+            document.getElementById('ui-chat-send').innerText = d.chatSend;
+            document.getElementById('chat-input-text').placeholder = d.chatPlaceholder;
+            document.getElementById('ui-journal-title').innerText = d.journalTitle;
+            document.getElementById('ui-btn-report').innerText = d.reportBtn;
+            document.getElementById('ui-set-ai').innerText = d.setAi;
+            document.getElementById('ui-btn-savekey').innerText = d.saveKeyBtn;
+            document.getElementById('ui-set-map').innerText = d.setMap;
+            document.getElementById('ui-btn-cache').innerText = d.cacheBtn;
+            document.getElementById('ui-set-backup').innerText = d.setBackup;
+            document.getElementById('ui-btn-backup').innerText = d.backupBtn;
+            document.getElementById('ui-btn-restore').innerText = d.restoreBtn;
+            document.getElementById('ui-btn-lang').innerText = d.langBtn;
+            document.getElementById('ui-btn-reset').innerText = d.resetBtn;
+            document.getElementById('ui-btn-closestg').innerText = d.closeBtn;
+            document.getElementById('ui-btn-vibro').innerText = d.vibroBtn;
+            document.getElementById('ui-btn-oled').innerText = d.oledBtn;
+            document.getElementById('ui-btn-close').innerText = d.closeRadarBtn;
+            document.getElementById('ui-oled-hint').innerHTML = d.oledHint;
+            
+            modes[0].n = d.mapGoogle; modes[1].n = d.mapTopo; modes[2].n = d.mapMil; modes[3].n = d.mapSat;
+            document.getElementById('btn-map-toggle').innerText = modes[curMode].n;
+        }
+
+        window.onload = function() { 
+            if(localStorage.getItem('did_kop_lang')) {
+                document.getElementById('lang-screen').style.display = 'none';
+                applyLanguage();
+                renderMapMarkers(); renderJournal(); findMe(true);
+            }
+        };
+
         var targetCoords = null;
         var deviceHeading = 0;
         var compassInitialized = false;
         var hasAbsolute = false; 
-
         var guideModeActive = false;
         var guideInterval = null;
         var chatCurrentPhotoBase64 = null;
 
         // ==========================================
-        // ПРО-ПІНПОІНТЕР (ОКРЕМИЙ ЕКРАН)
+        // ПРО-ПІНПОІНТЕР
         // ==========================================
         var pinpointerActive = false;
         var audioCtx = null;
@@ -238,36 +388,27 @@
 
         window.addEventListener("deviceorientationabsolute", function(e) {
             if (!pinpointerActive || e.alpha === null) return;
-            
             if (lastAlphaForMag !== null) {
                 let diff = Math.abs(e.alpha - lastAlphaForMag);
                 if (diff > 180) diff = 360 - diff;
-                
                 if (diff < 1.0) diff = 0; 
-                
                 let sens = parseFloat(document.getElementById('sens-slider').value);
                 anomalyScore = (anomalyScore * 0.85) + (diff * sens * 0.5); 
-                
-                let valUI = document.getElementById('pp-val-text');
-                let ringUI = document.getElementById('pp-ring');
                 let displayVal = Math.round(anomalyScore);
                 
-                valUI.innerText = displayVal;
+                document.getElementById('pp-val-text').innerText = displayVal;
 
                 if (displayVal > 10) { 
-                    valUI.style.color = "#e74c3c"; 
-                    ringUI.style.borderColor = "#e74c3c";
-                    
+                    document.getElementById('pp-val-text').style.color = "#e74c3c"; 
+                    document.getElementById('pp-ring').style.borderColor = "#e74c3c";
                     let newPitch = 400 + (displayVal * 10);
                     if (newPitch > 2000) newPitch = 2000;
-                    
                     osc.frequency.setTargetAtTime(newPitch, audioCtx.currentTime, 0.05);
                     gainNode.gain.setTargetAtTime(0.5, audioCtx.currentTime, 0.05);
-                    
                     if (displayVal > 30 && navigator.vibrate) navigator.vibrate(50);
                 } else {
-                    valUI.style.color = "#2ecc71"; 
-                    ringUI.style.borderColor = "#444";
+                    document.getElementById('pp-val-text').style.color = "#2ecc71"; 
+                    document.getElementById('pp-ring').style.borderColor = "#444";
                     gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); 
                 }
             }
@@ -276,7 +417,6 @@
 
         function togglePinpointer() {
             var modal = document.getElementById('pinpointer-modal');
-
             if (pinpointerActive) {
                 pinpointerActive = false;
                 modal.style.display = 'none';
@@ -290,7 +430,6 @@
                 document.getElementById('pp-val-text').innerText = "0";
             }
         }
-        // ==========================================
 
         function initCompass() {
             if (compassInitialized) return;
@@ -309,7 +448,7 @@
         }
 
         function toggleGuideMode() {
-            var btn = document.getElementById('btn-guide');
+            var btn = document.getElementById('ui-btn-vibro');
             var psStatus = document.getElementById('ps-vibro-status');
             if (guideModeActive) {
                 guideModeActive = false; clearInterval(guideInterval);
@@ -333,18 +472,6 @@
             }
         }
 
-        function checkPin() {
-            if(document.getElementById('pin-code').value === SECRET_PIN) { sessionStorage.setItem('did_kop_unlocked', 'true'); unlockAndLocate(); } 
-            else { alert("❌ Невірний пароль!"); document.getElementById('pin-code').value = "";}
-        }
-
-        window.onload = function() { if(sessionStorage.getItem('did_kop_unlocked') === 'true') unlockAndLocate(); };
-
-        function unlockAndLocate() {
-            document.getElementById('lock-screen').style.display = 'none';
-            renderMapMarkers(); renderJournal(); findMe(true); 
-        }
-
         var map, currentLat = null, currentLon = null, userMarker = null;
         var flagMarker = null, carMarker = null, flagLat = null, flagLon = null, carLat = null, carLon = null;
 
@@ -355,7 +482,7 @@
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom: 18})
         };
         
-        var modes = [ {l: layers.google, n: "🗺️ МАПА: СУЧАСНА (GOOGLE)"}, {l: layers.topo, n: "⛰️ МАПА: ШВИДКА ТОПОГРАФІЯ"}, {l: layers.military, n: "🪖 МАПА: ВІЙСЬКОВИЙ АРХІВ"}, {l: layers.sat, n: "🛰️ МАПА: СУПУТНИК (ARCGIS)"} ];
+        var modes = [ {l: layers.google, n: "🗺️ МАПА"}, {l: layers.topo, n: "⛰️ МАПА"}, {l: layers.military, n: "🪖 МАПА"}, {l: layers.sat, n: "🛰️ МАПА"} ];
         var curMode = 0;
 
         map = L.map('map', {zoomControl: false, layers: [layers.google]}).setView([49.42, 27.00], 8);
@@ -365,7 +492,7 @@
             flagLat = e.latlng.lat; flagLon = e.latlng.lng;
             if (!flagMarker) flagMarker = L.marker([flagLat, flagLon], { icon: L.divIcon({html: '🚩', className: 'flag-icon', iconSize: [35,35], iconAnchor: [17, 35]}) }).addTo(map);
             else flagMarker.setLatLng([flagLat, flagLon]);
-            document.getElementById('btn-add-past').style.display = 'block'; startNavigation(flagLat, flagLon, "Прапорець");
+            document.getElementById('btn-add-past').style.display = 'block'; startNavigation(flagLat, flagLon, "🚩");
         });
 
         map.on('move', function() { if (currentLat === null) updateRadar(); });
@@ -384,11 +511,11 @@
         function handleCarMarker() {
             initCompass(); 
             if (carMarker !== null) {
-                if (confirm("Точно видалити мітку паркування автомобіля?")) { map.removeLayer(carMarker); carMarker = null; carLat = null; carLon = null; closeRadar(); }
+                if (confirm("Точно видалити мітку? / Delete marker?")) { map.removeLayer(carMarker); carMarker = null; carLat = null; carLon = null; closeRadar(); }
             } else {
                 carLat = currentLat !== null ? currentLat : map.getCenter().lat; carLon = currentLon !== null ? currentLon : map.getCenter().lng;
-                carMarker = L.marker([carLat, carLon], { icon: L.divIcon({html: '🚙', className: 'flag-icon', iconSize: [40,40], iconAnchor: [20, 40]}) }).addTo(map).on('click', () => startNavigation(carLat, carLon, "Автомобіль"));
-                alert("✅ Машину припарковано!"); startNavigation(carLat, carLon, "Автомобіль");
+                carMarker = L.marker([carLat, carLon], { icon: L.divIcon({html: '🚙', className: 'flag-icon', iconSize: [40,40], iconAnchor: [20, 40]}) }).addTo(map).on('click', () => startNavigation(carLat, carLon, "🚙"));
+                startNavigation(carLat, carLon, "🚙");
             }
         }
 
@@ -420,7 +547,7 @@
         });
 
         document.getElementById('flag-camera-input').addEventListener('change', function(e) {
-            if (!flagLat) return alert("Спочатку поставте прапорець на мапі!");
+            if (!flagLat) return alert("Спочатку поставте прапорець на мапі! / Set flag first!");
             var reader = new FileReader(); reader.onload = function(evt) {
                 var newPoint = { id: Date.now(), lat: flagLat, lon: flagLon, date: new Date().toLocaleString('uk-UA'), photo: evt.target.result, ai_result: null };
                 var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); points.push(newPoint); localStorage.setItem('did_kop_offline_db', JSON.stringify(points)); location.reload();
@@ -432,55 +559,57 @@
             points.forEach(p => { 
                 if(p && p.lat) {
                     var thumbIcon = L.divIcon({ html: `<div class="map-thumb-container"><img src="${p.photo}"></div>`, className: '', iconSize: [50, 50], iconAnchor: [25, 25] });
-                    L.marker([p.lat, p.lon], {icon: thumbIcon}).addTo(map).on('click', () => startNavigation(p.lat, p.lon, "Знахідка")).bindPopup(`<img src="${p.photo}" style="width:140px; border-radius:5px;"><br><button class="btn" style="background:#c0392b; padding:5px; margin-top:10px; width:100%; font-size:12px;" onclick="deletePoint(${p.id})">🗑️ ВИДАЛИТИ ЗНАХІДКУ</button>`); 
+                    var delText = i18n[currentLang].deleteBtn;
+                    L.marker([p.lat, p.lon], {icon: thumbIcon}).addTo(map).on('click', () => startNavigation(p.lat, p.lon, "📍")).bindPopup(`<img src="${p.photo}" style="width:140px; border-radius:5px;"><br><button class="btn" style="background:#c0392b; padding:5px; margin-top:10px; width:100%; font-size:12px;" onclick="deletePoint(${p.id})">${delText}</button>`); 
                 }
             });
         }
 
         function renderJournal() {
             var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); var listDiv = document.getElementById('journal-list');
-            if (points.length === 0) { listDiv.innerHTML = "<p>Немає знахідок.</p>"; return; }
+            if (points.length === 0) { listDiv.innerHTML = ""; return; }
             var html = "";
+            var d = i18n[currentLang];
             points.reverse().forEach(p => {
                 html += `<div class="find-card"><img src="${p.photo}"><div class="find-info">📅 ${p.date}<br>📍 ${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}<br>`;
                 if (p.ai_result) html += `<div class="ai-result-text">🤖 ${p.ai_result}</div>`;
-                else html += `<button class="btn" style="background:#2980b9; padding:5px; margin-top:5px;" onclick="askAI(${p.id})">🧠 АНАЛІЗ</button>`;
-                html += `<button class="btn" style="background:#c0392b; padding:5px; margin-top:5px;" onclick="deletePoint(${p.id})">🗑️ ВИДАЛИТИ</button></div></div>`;
+                else html += `<button class="btn" style="background:#2980b9; padding:5px; margin-top:5px;" onclick="askAI(${p.id})">${d.analyzeBtn}</button>`;
+                html += `<button class="btn" style="background:#c0392b; padding:5px; margin-top:5px;" onclick="deletePoint(${p.id})">${d.deleteBtn}</button></div></div>`;
             }); listDiv.innerHTML = html;
         }
 
         async function cacheLocalArea() {
             var cacheLat = currentLat !== null ? currentLat : map.getCenter().lat; var cacheLon = currentLon !== null ? currentLon : map.getCenter().lng;
-            if (!confirm("Програма збереже мапу навколо вас для роботи без інтернету (15 сек). Почати?")) return;
+            if (!confirm("Програма збереже мапу навколо вас для роботи без інтернету (15 сек). Почати? / Save map for offline?")) return;
             closeSettings(); var center = [cacheLat, cacheLon]; map.setView(center, 16); document.getElementById('radar-panel').style.display = 'block';
             var offsets = [[0,0],[0.01,0],[0.01,0.01],[0,0.01],[-0.01,0.01],[-0.01,0],[-0.01,-0.01],[0,-0.01],[0.01,-0.01]];
             for (let i = 0; i < offsets.length; i++) {
                 map.panTo([center[0] + offsets[i][0], center[1] + offsets[i][1]], {animate: false});
-                document.getElementById('radar-info').innerText = `Кешування... ${Math.round(((i+1)/offsets.length)*100)}%`; await new Promise(r => setTimeout(r, 1500)); 
-            } alert("✅ Готово!"); closeRadar();
+                document.getElementById('radar-info').innerText = `15 sec... ${Math.round(((i+1)/offsets.length)*100)}%`; await new Promise(r => setTimeout(r, 1500)); 
+            } alert("✅ OK!"); closeRadar();
         }
 
         async function askAI(id) {
-            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) return alert("Ключ ШІ!");
+            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) return alert("API Key!");
             var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); var p = points.find(x => x.id === id); var base64 = p.photo.split(',')[1];
-            var aiPrompt = `Ти - Дід Коп, археолог. Проаналізуй фото: що це, епоха, правитель, метал, ціна, чистка. ВЕЛИКИМИ ЛІТЕРАМИ.`;
+            var aiPrompt = i18n[currentLang].aiPromptPhoto;
             try {
                 var res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }, { inline_data: { mime_type: "image/jpeg", data: base64 } }] }] }) });
                 var d = await res.json(); p.ai_result = d.candidates[0].content.parts[0].text; localStorage.setItem('did_kop_offline_db', JSON.stringify(points)); renderJournal();
-            } catch(e) { alert("Помилка ШІ!"); }
+            } catch(e) { alert("AI Error!"); }
         }
 
         async function doRecon() {
             var targetLat = flagLat || currentLat || map.getCenter().lat; var targetLon = flagLon || currentLon || map.getCenter().lng;
-            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) return alert("Потрібен ключ!");
-            document.getElementById('recon-modal').style.display = 'block'; document.getElementById('recon-content').innerHTML = "<h3 style='color:white; text-align:center; margin-top:50px;'>⏳ Дід Коп вивчає архіви...</h3>";
+            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) return alert("API Key!");
+            document.getElementById('recon-modal').style.display = 'block'; document.getElementById('recon-content').innerHTML = "<h3 style='color:white; text-align:center; margin-top:50px;'>⏳ AI Recon...</h3>";
             try {
-                var nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetLat}&lon=${targetLon}&accept-language=uk`);
-                var address = (await nomRes.json()).display_name || "Поле/Ліс";
-                var reconPrompt = `Ти - Дід Коп, напарник Юрія (58 років). Точка ${targetLat}, ${targetLon} (${address}). Опиши історію району, тракти, грунт. ВЕЛИКИМИ ЛІТЕРАМИ.`;
+                var nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetLat}&lon=${targetLon}&accept-language=en`);
+                var address = (await nomRes.json()).display_name || "Zone";
+                var reconPrompt = i18n[currentLang].aiPromptRecon + ` Zone: ${targetLat}, ${targetLon} (${address}).`;
                 var res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: reconPrompt }] }] }) });
-                var d = await res.json(); document.getElementById('recon-content').innerHTML = `<h2>🛰️ Звіт Діда Копа</h2><p style="color:#aaa;">📍 ${address}</p><div class="recon-text">${d.candidates[0].content.parts[0].text}</div><button class="btn" style="background:#c0392b; width:100%; margin-top: 20px;" onclick="document.getElementById('recon-modal').style.display='none'">❌ ЗАКРИТИ</button>`;
-            } catch(e) { document.getElementById('recon-content').innerHTML = `<h3 style="color:red; text-align:center;">❌ Помилка розвідки</h3><button class="btn" style="background:#444; width:100%;" onclick="document.getElementById('recon-modal').style.display='none'">Закрити</button>`; }
+                var d = await res.json(); document.getElementById('recon-content').innerHTML = `<h2>🛰️ AI Recon</h2><p style="color:#aaa;">📍 ${address}</p><div class="recon-text">${d.candidates[0].content.parts[0].text}</div><button class="btn" style="background:#c0392b; width:100%; margin-top: 20px;" onclick="document.getElementById('recon-modal').style.display='none'">❌</button>`;
+            } catch(e) { document.getElementById('recon-content').innerHTML = `<h3 style="color:red; text-align:center;">❌ Error</h3><button class="btn" style="background:#444; width:100%;" onclick="document.getElementById('recon-modal').style.display='none'">Close</button>`; }
         }
 
         function toggleChat() { var c = document.getElementById('chat-modal'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
@@ -492,7 +621,7 @@
         document.getElementById('chat-photo-input').addEventListener('change', function(e) {
             var reader = new FileReader(); reader.onload = function(evt) {
                 chatCurrentPhotoBase64 = evt.target.result;
-                appendChatMessage("user-msg", "<img src='" + chatCurrentPhotoBase64 + "'><br><i>📸 Фото завантажено. Додай текст і тисни ПРИЙОМ.</i>");
+                appendChatMessage("user-msg", "<img src='" + chatCurrentPhotoBase64 + "'><br><i>📸</i>");
             }; if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
@@ -501,21 +630,22 @@
             if (!text && !photoBase64) return;
             textInput.value = ""; chatCurrentPhotoBase64 = null;
             if(text) appendChatMessage("user-msg", text);
-            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) { appendChatMessage("ai-msg", "Внучку, введи Ключ ШІ в налаштуваннях (⚙️). Рація не робить!"); return; }
-            var msgId = "ai-loading-" + Date.now(); appendChatMessage("ai-msg", "⏳ Дід слухає...", msgId);
-            var promptText = "Ти - Дід Коп, легендарний шукач артефактів, археолог та експерт з металошукачів. Твій напарник - Юрій (58 років). Відповідай на його питання вичерпно, цікаво, з копацьким гумором та досвідом. ВЕЛИКИМИ ЛІТЕРАМИ де треба акцент. Питання/Запит: " + (text ? text : "Що скажеш про це фото?");
+            var apiKey = localStorage.getItem('did_kop_api_key'); if(!apiKey) { appendChatMessage("ai-msg", "API Key needed in Settings (⚙️)!"); return; }
+            var msgId = "ai-loading-" + Date.now(); appendChatMessage("ai-msg", "⏳...", msgId);
+            
+            var promptText = i18n[currentLang].aiPromptRole + (text ? text : "Image analysis.");
             var parts = [{ text: promptText }];
             if (photoBase64) parts.push({ inline_data: { mime_type: "image/jpeg", data: photoBase64.split(',')[1] } });
             try {
                 var res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: parts }] }) });
                 var d = await res.json(); var answer = d.candidates[0].content.parts[0].text.replace(/\n/g, "<br>"); document.getElementById(msgId).innerHTML = "🤖 " + answer;
-            } catch(e) { document.getElementById(msgId).innerHTML = "❌ Зв'язок обірвався (Помилка ШІ)."; }
+            } catch(e) { document.getElementById(msgId).innerHTML = "❌ Error."; }
         }
 
         document.getElementById("chat-input-text").addEventListener("keypress", function(event) { if (event.key === "Enter") { event.preventDefault(); sendChatMessage(); } });
 
         function exportBackup() {
-            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); if(points.length === 0) return alert("Немає даних!");
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); if(points.length === 0) return alert("No data!");
             var backupData = points.map(p => ({ id: p.id, lat: p.lat, lon: p.lon, date: p.date, photo: p.photo }));
             var blob = new Blob([JSON.stringify(backupData)], {type: "application/json"});
             var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Did_Kop_Backup.json`; link.click();
@@ -525,22 +655,22 @@
             var reader = new FileReader(); reader.onload = function(evt) {
                 try {
                     var data = JSON.parse(evt.target.result);
-                    if(confirm("Відновити дані з файлу? Це замінить поточну мапу.")) { localStorage.setItem('did_kop_offline_db', JSON.stringify(data)); location.reload(); }
-                } catch(err) { alert("❌ Помилка файлу"); }
+                    if(confirm("Restore data? This overwrites current map.")) { localStorage.setItem('did_kop_offline_db', JSON.stringify(data)); location.reload(); }
+                } catch(err) { alert("❌ File Error"); }
             }; reader.readAsText(e.target.files[0]);
         });
 
-        function deletePoint(id) { if(confirm("Видалити цю знахідку?")) { var p = JSON.parse(localStorage.getItem('did_kop_offline_db')); p = p.filter(x => x.id !== id); localStorage.setItem('did_kop_offline_db', JSON.stringify(p)); location.reload(); } }
-        function emergencyReset() { if(confirm("Очистити все?")) { localStorage.clear(); location.reload(); } }
+        function deletePoint(id) { if(confirm("Delete?")) { var p = JSON.parse(localStorage.getItem('did_kop_offline_db')); p = p.filter(x => x.id !== id); localStorage.setItem('did_kop_offline_db', JSON.stringify(p)); location.reload(); } }
+        function emergencyReset() { if(confirm("Clear ALL?")) { localStorage.clear(); location.reload(); } }
         function toggleJournal() { var s = document.getElementById('journal-screen'); s.style.display = (s.style.display==='block'?'none':'block'); }
         function openSettings() { document.getElementById('settings-modal').style.display='flex'; }
         function closeSettings() { document.getElementById('settings-modal').style.display='none'; }
-        function saveApiKey() { localStorage.setItem('did_kop_api_key', document.getElementById('api-key-input').value); closeSettings(); alert("Збережено!"); }
+        function saveApiKey() { localStorage.setItem('did_kop_api_key', document.getElementById('api-key-input').value); closeSettings(); alert("Saved!"); }
         
         function exportHTMLReport() {
-            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); if(points.length === 0) return alert("Журнал порожній!");
-            var htmlContent = `<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><title>Архів Діда Копа</title><style>body { background-color: #111; color: #eee; font-family: 'Arial', sans-serif; padding: 40px; max-width: 1000px; margin: 0 auto; } h1 { color: #f39c12; text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; } .card { background-color: #222; border: 1px solid #444; border-radius: 12px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: flex-start; } .card img { max-width: 300px; border-radius: 10px; border: 2px solid #555; } .info { flex-grow: 1; } .date { color: #f39c12; font-size: 22px; font-weight: bold; margin-top: 0; } .coords { color: #aaa; font-size: 14px; margin-bottom: 15px; } .ai-text { background-color: #1a1a1a; padding: 20px; border-left: 5px solid #27ae60; border-radius: 8px; color: #4ade80; font-size: 18px; line-height: 1.5; white-space: pre-wrap; } .btn-map { display: inline-block; background-color: #2980b9; color: white; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px; } .btn-map:hover { background-color: #3498db; }</style></head><body><h1>📖 Офіційний Звіт "Дід Коп"</h1>`;
-            points.forEach(p => { if(!p) return; var mapLink = `https://www.google.com/maps/search/?api=1&query=$0{p.lat},${p.lon}`; var aiBlock = p.ai_result ? `<div class="ai-text"><b>🤖 Доповідь ШІ:</b><br><br>${p.ai_result}</div>` : `<p style="color:#888;">Експертиза не проводилась.</p>`; htmlContent += `<div class="card"><img src="${p.photo}" alt="Знахідка"><div class="info"><h2 class="date">📅 Дата: ${p.date}</h2><div class="coords">📍 Координати: ${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</div>${aiBlock}<a href="${mapLink}" target="_blank" class="btn-map">🗺️ ВІДКРИТИ МІСЦЕ В GOOGLE MAPS</a></div></div>`; });
+            var points = JSON.parse(localStorage.getItem('did_kop_offline_db') || '[]'); if(points.length === 0) return;
+            var htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Archive</title><style>body { background-color: #111; color: #eee; font-family: 'Arial', sans-serif; padding: 40px; max-width: 1000px; margin: 0 auto; } h1 { color: #f39c12; text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; } .card { background-color: #222; border: 1px solid #444; border-radius: 12px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: flex-start; } .card img { max-width: 300px; border-radius: 10px; border: 2px solid #555; } .info { flex-grow: 1; } .date { color: #f39c12; font-size: 22px; font-weight: bold; margin-top: 0; } .coords { color: #aaa; font-size: 14px; margin-bottom: 15px; } .ai-text { background-color: #1a1a1a; padding: 20px; border-left: 5px solid #27ae60; border-radius: 8px; color: #4ade80; font-size: 18px; line-height: 1.5; white-space: pre-wrap; } .btn-map { display: inline-block; background-color: #2980b9; color: white; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px; } .btn-map:hover { background-color: #3498db; }</style></head><body><h1>📖 Official Report</h1>`;
+            points.forEach(p => { if(!p) return; var mapLink = `https://www.google.com/maps/search/?api=1&query=$0{p.lat},${p.lon}`; var aiBlock = p.ai_result ? `<div class="ai-text"><b>🤖 AI:</b><br><br>${p.ai_result}</div>` : ``; htmlContent += `<div class="card"><img src="${p.photo}"><div class="info"><h2 class="date">📅 ${p.date}</h2><div class="coords">📍 ${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</div>${aiBlock}<a href="${mapLink}" target="_blank" class="btn-map">🗺️ GOOGLE MAPS</a></div></div>`; });
             htmlContent += `</body></html>`;
             var blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Archive_Did_Kop.html`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
