@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Дід Коп: Чат + Пінпоінтер</title>
+    <title>Дід Коп: Чат + Хак-Пінпоінтер</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -83,7 +83,7 @@
     <button id="btn-pinpointer" onclick="togglePinpointer()">🧲 ПІНПОІНТЕР</button>
     
     <div id="mag-panel">
-        <div id="mag-label">Сигнал (µT)</div>
+        <div id="mag-label">АНОМАЛІЯ</div>
         <div id="mag-value">0</div>
     </div>
 
@@ -187,14 +187,14 @@
         var chatCurrentPhotoBase64 = null;
 
         // ==========================================
-        // ЛОГІКА ПІНПОІНТЕРА (МАГНІТОМЕТР + ЗВУК)
+        // ХАКЕРСЬКИЙ ПІНПОІНТЕР (АНАЛІЗ АНОМАЛІЙ КОМПАСА)
         // ==========================================
         var pinpointerActive = false;
-        var magSensor = null;
         var audioCtx = null;
         var osc = null;
         var gainNode = null;
-        var baseMagField = null; // Калібрування фону
+        var lastAlphaForMag = null;
+        var anomalyScore = 0;
 
         function initAudio() {
             if (!audioCtx) {
@@ -202,84 +202,68 @@
                 audioCtx = new AudioContext();
                 osc = audioCtx.createOscillator();
                 gainNode = audioCtx.createGain();
-                osc.type = 'square'; // Металошукацький "писк"
+                osc.type = 'square'; 
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 osc.frequency.value = 400;
-                gainNode.gain.value = 0; // Зі старту тихо
+                gainNode.gain.value = 0; 
                 osc.start();
             }
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
+        // Слухаємо компас постійно для виявлення перешкод
+        window.addEventListener("deviceorientationabsolute", function(e) {
+            if (!pinpointerActive || e.alpha === null) return;
+            
+            if (lastAlphaForMag !== null) {
+                // Рахуємо наскільки стрибнув компас
+                let diff = Math.abs(e.alpha - lastAlphaForMag);
+                if (diff > 180) diff = 360 - diff;
+                
+                // Накопичуємо аномалію (якщо компас "трясеться" від металу)
+                anomalyScore = (anomalyScore * 0.9) + (diff * 5); 
+                
+                let valUI = document.getElementById('mag-value');
+                let displayVal = Math.round(anomalyScore);
+                valUI.innerText = displayVal;
+
+                // Якщо аномалія більша за природний фон (більше 10)
+                if (displayVal > 10) { 
+                    valUI.style.color = "#e74c3c"; // Червоний
+                    let newPitch = 400 + (displayVal * 15);
+                    if (newPitch > 2000) newPitch = 2000;
+                    
+                    osc.frequency.setTargetAtTime(newPitch, audioCtx.currentTime, 0.05);
+                    gainNode.gain.setTargetAtTime(0.5, audioCtx.currentTime, 0.05);
+                    
+                    if (displayVal > 30 && navigator.vibrate) navigator.vibrate(50);
+                } else {
+                    valUI.style.color = "#2ecc71"; // Зелений
+                    gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+                }
+            }
+            lastAlphaForMag = e.alpha;
+        }, true);
+
         function togglePinpointer() {
             var btn = document.getElementById('btn-pinpointer');
             var panel = document.getElementById('mag-panel');
-            var valUI = document.getElementById('mag-value');
 
             if (pinpointerActive) {
-                // ВИМИКАЄМО
                 pinpointerActive = false;
                 btn.classList.remove('active');
                 panel.style.display = 'none';
-                if (magSensor) magSensor.stop();
                 if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
-                baseMagField = null;
+                anomalyScore = 0;
+                lastAlphaForMag = null;
             } else {
-                // ВМИКАЄМО
-                if (!('Magnetometer' in window)) {
-                    alert("На жаль, ваш браузер або пристрій (можливо iPhone) блокує або не має магнітного сканера.");
-                    return;
-                }
-                
-                initAudio(); // Запускаємо звук (вимагає кліку користувача)
+                initAudio(); 
                 pinpointerActive = true;
                 btn.classList.add('active');
                 panel.style.display = 'block';
-                valUI.innerText = "КАЛІБР...";
-                valUI.style.color = "#f1c40f";
-
-                try {
-                    magSensor = new Magnetometer({frequency: 20});
-                    magSensor.addEventListener('reading', e => {
-                        let field = Math.sqrt(magSensor.x**2 + magSensor.y**2 + magSensor.z**2);
-                        
-                        // Калібрування (беремо перше значення як фон землі, зазвичай ~45 µT)
-                        if (baseMagField === null && field > 0) {
-                            baseMagField = field;
-                        }
-                        
-                        if (baseMagField !== null) {
-                            let diff = Math.abs(field - baseMagField);
-                            valUI.innerText = Math.round(field);
-
-                            // Якщо поле різко змінилося (піднесли залізо)
-                            if (diff > 10) {
-                                valUI.style.color = "#e74c3c"; // Червоний
-                                // Збільшуємо гучність і висоту звуку (VCO)
-                                let newPitch = 400 + (diff * 10);
-                                if (newPitch > 2000) newPitch = 2000;
-                                
-                                osc.frequency.setTargetAtTime(newPitch, audioCtx.currentTime, 0.05);
-                                gainNode.gain.setTargetAtTime(0.5, audioCtx.currentTime, 0.05);
-                                
-                                // Вібрація при сильному сигналі
-                                if (diff > 30 && navigator.vibrate) navigator.vibrate(50);
-                            } else {
-                                valUI.style.color = "#2ecc71"; // Зелений
-                                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // Тиша
-                            }
-                        }
-                    });
-                    magSensor.addEventListener('error', event => {
-                        valUI.innerText = "ERR";
-                        if (gainNode) gainNode.gain.value = 0;
-                    });
-                    magSensor.start();
-                } catch(e) {
-                    alert("Помилка доступу до датчика. Можливо потрібен HTTPS.");
-                    togglePinpointer(); // Вимикаємо
-                }
+                document.getElementById('mag-value').innerText = "0";
+                document.getElementById('mag-label').innerText = "АНОМАЛІЯ";
             }
         }
         // ==========================================
