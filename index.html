@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Дід Коп: Вібро-Радар + Чат</title>
+    <title>Дід Коп: Чат + Пінпоінтер</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -24,7 +24,16 @@
         #ps-info { font-size: 50px; font-weight: bold; color: #f39c12; margin-top: 30px; font-family: monospace; }
         .ps-hint { color: #555; font-size: 14px; margin-top: 40px; text-align: center; padding: 0 20px; }
 
-        #btn-recon { position: fixed; top: 70px; left: 15px; z-index: 1000; background: #8e44ad; color: white; border: 2px solid #9b59b6; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        /* КНОПКА ТА ПАНЕЛЬ ПІНПОІНТЕРА */
+        #btn-pinpointer { position: fixed; top: 70px; right: 15px; z-index: 1000; background: #8e44ad; color: white; border: 2px solid #9b59b6; padding: 12px; border-radius: 50px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: background 0.3s; }
+        #btn-pinpointer.active { background: #e74c3c; border-color: #c0392b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        #mag-panel { display: none; position: fixed; top: 130px; right: 15px; background: rgba(0,0,0,0.85); border: 1px solid #9b59b6; padding: 10px 15px; border-radius: 8px; z-index: 2000; text-align: center; }
+        #mag-value { font-size: 24px; font-weight: bold; color: #2ecc71; margin-top: 5px; font-family: monospace; }
+        #mag-label { font-size: 10px; color: #aaa; text-transform: uppercase; }
+
+        #btn-recon { position: fixed; top: 70px; left: 15px; z-index: 1000; background: #34495e; color: white; border: 2px solid #2c3e50; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         #btn-add-past { display: none; position: fixed; top: 125px; left: 15px; z-index: 1000; background: #27ae60; color: white; border: 2px solid #2ecc71; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         #btn-map-toggle { position: fixed; top: 180px; left: 15px; z-index: 1000; background: #2c3e50; color: #f39c12; border: 2px solid #f39c12; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         
@@ -48,7 +57,7 @@
         input[type="text"] { width: 90%; padding: 12px; margin: 15px 0; background: #111; color: white; border: 1px solid #555; border-radius: 8px; font-family: monospace; }
         hr { border: 1px solid #333; margin: 20px 0; }
 
-        /* ВДОСКОНАЛЕНІ СТИЛІ ДЛЯ ЧАТУ (ФІКС МОБІЛЬНОЇ ПАНЕЛІ) */
+        /* СТИЛІ ЧАТУ */
         #chat-modal { display: none; position: fixed; top: 55px; left: 0; right: 0; bottom: 0; background: #111; z-index: 2600; flex-direction: column; }
         .chat-header { background: #222; padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid #444; color: #f39c12; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
         #chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
@@ -56,7 +65,6 @@
         .user-msg { background: #2980b9; align-self: flex-end; color: white; border-bottom-right-radius: 4px; }
         .ai-msg { background: #222; border: 1px solid #444; align-self: flex-start; color: #4ade80; border-bottom-left-radius: 4px; }
         .ai-msg img, .user-msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        /* Додано padding-bottom щоб кнопки не ховалися під системну панель телефону */
         .chat-input-area { display: flex; padding: 15px 15px 30px 15px; background: #1a1a1a; border-top: 1px solid #333; gap: 10px; align-items: center;}
         #chat-input-text { flex: 1; padding: 15px; background: #222; border: 1px solid #555; color: white; border-radius: 25px; font-size: 16px; }
         .chat-btn-photo { background: #d35400; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 22px; cursor: pointer; flex-shrink: 0; display: flex; justify-content: center; align-items: center; }
@@ -70,6 +78,13 @@
         <p style="color: #aaa;">Введіть пароль</p>
         <input type="password" id="pin-code" class="pin-input" maxlength="4" pattern="\d*">
         <button class="pin-btn" onclick="checkPin()">УВІЙТИ</button>
+    </div>
+
+    <button id="btn-pinpointer" onclick="togglePinpointer()">🧲 ПІНПОІНТЕР</button>
+    
+    <div id="mag-panel">
+        <div id="mag-label">Сигнал (µT)</div>
+        <div id="mag-value">0</div>
     </div>
 
     <div id="power-save-screen" ondblclick="togglePowerSave()">
@@ -141,16 +156,13 @@
             <h3>🤖 Налаштування ШІ</h3>
             <input type="text" id="api-key-input" placeholder="Ключ Gemini">
             <button class="btn" style="background:#2980b9; width:100%; margin-bottom:10px;" onclick="saveApiKey()">💾 ЗБЕРЕГТИ КЛЮЧ</button>
-            
             <hr>
             <h3>🗺️ Офлайн Мапа</h3>
             <button class="btn" style="background:#f39c12; width:100%; margin-bottom:10px;" onclick="cacheLocalArea()">📥 КЕШУВАТИ МАПУ (2х2 км)</button>
-
             <hr>
             <h3>🗄️ Резервна копія</h3>
             <button class="btn" style="background:#27ae60; width:100%; margin-bottom:10px;" onclick="exportBackup()">💾 ЗБЕРЕГТИ БЕКАП (.json)</button>
             <button class="btn" style="background:#8e44ad; width:100%; margin-bottom:10px;" onclick="document.getElementById('backup-input').click()">📂 ВІДНОВИТИ З ФАЙЛУ</button>
-            
             <hr>
             <button class="btn" style="background:red; color:white; width:100%; margin-bottom:10px;" onclick="emergencyReset()">🚨 ПОВНЕ СКИДАННЯ</button>
             <button class="btn" style="background:#444; width:100%;" onclick="closeSettings()">ЗАКРИТИ</button>
@@ -173,6 +185,104 @@
         var guideInterval = null;
 
         var chatCurrentPhotoBase64 = null;
+
+        // ==========================================
+        // ЛОГІКА ПІНПОІНТЕРА (МАГНІТОМЕТР + ЗВУК)
+        // ==========================================
+        var pinpointerActive = false;
+        var magSensor = null;
+        var audioCtx = null;
+        var osc = null;
+        var gainNode = null;
+        var baseMagField = null; // Калібрування фону
+
+        function initAudio() {
+            if (!audioCtx) {
+                var AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                osc = audioCtx.createOscillator();
+                gainNode = audioCtx.createGain();
+                osc.type = 'square'; // Металошукацький "писк"
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.frequency.value = 400;
+                gainNode.gain.value = 0; // Зі старту тихо
+                osc.start();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function togglePinpointer() {
+            var btn = document.getElementById('btn-pinpointer');
+            var panel = document.getElementById('mag-panel');
+            var valUI = document.getElementById('mag-value');
+
+            if (pinpointerActive) {
+                // ВИМИКАЄМО
+                pinpointerActive = false;
+                btn.classList.remove('active');
+                panel.style.display = 'none';
+                if (magSensor) magSensor.stop();
+                if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+                baseMagField = null;
+            } else {
+                // ВМИКАЄМО
+                if (!('Magnetometer' in window)) {
+                    alert("На жаль, ваш браузер або пристрій (можливо iPhone) блокує або не має магнітного сканера.");
+                    return;
+                }
+                
+                initAudio(); // Запускаємо звук (вимагає кліку користувача)
+                pinpointerActive = true;
+                btn.classList.add('active');
+                panel.style.display = 'block';
+                valUI.innerText = "КАЛІБР...";
+                valUI.style.color = "#f1c40f";
+
+                try {
+                    magSensor = new Magnetometer({frequency: 20});
+                    magSensor.addEventListener('reading', e => {
+                        let field = Math.sqrt(magSensor.x**2 + magSensor.y**2 + magSensor.z**2);
+                        
+                        // Калібрування (беремо перше значення як фон землі, зазвичай ~45 µT)
+                        if (baseMagField === null && field > 0) {
+                            baseMagField = field;
+                        }
+                        
+                        if (baseMagField !== null) {
+                            let diff = Math.abs(field - baseMagField);
+                            valUI.innerText = Math.round(field);
+
+                            // Якщо поле різко змінилося (піднесли залізо)
+                            if (diff > 10) {
+                                valUI.style.color = "#e74c3c"; // Червоний
+                                // Збільшуємо гучність і висоту звуку (VCO)
+                                let newPitch = 400 + (diff * 10);
+                                if (newPitch > 2000) newPitch = 2000;
+                                
+                                osc.frequency.setTargetAtTime(newPitch, audioCtx.currentTime, 0.05);
+                                gainNode.gain.setTargetAtTime(0.5, audioCtx.currentTime, 0.05);
+                                
+                                // Вібрація при сильному сигналі
+                                if (diff > 30 && navigator.vibrate) navigator.vibrate(50);
+                            } else {
+                                valUI.style.color = "#2ecc71"; // Зелений
+                                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // Тиша
+                            }
+                        }
+                    });
+                    magSensor.addEventListener('error', event => {
+                        valUI.innerText = "ERR";
+                        if (gainNode) gainNode.gain.value = 0;
+                    });
+                    magSensor.start();
+                } catch(e) {
+                    alert("Помилка доступу до датчика. Можливо потрібен HTTPS.");
+                    togglePinpointer(); // Вимикаємо
+                }
+            }
+        }
+        // ==========================================
 
         function initCompass() {
             if (compassInitialized) return;
