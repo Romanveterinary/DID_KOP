@@ -115,7 +115,7 @@
     </div>
 
     <div id="power-save-screen" ondblclick="togglePowerSave()">
-        <div id="ps-vibro-status" style="color:#e74c3c; font-size:20px; font-weight:bold; display:none; margin-bottom:20px;" id="ui-vibro-active">📳 ПОВОДИР АКТИВНИЙ</div>
+        <div id="ps-vibro-status" style="color:#e74c3c; font-size:20px; font-weight:bold; display:none; margin-bottom:20px;">📳 ПОВОДИР АКТИВНИЙ</div>
         <svg id="ps-arrow" class="compass-arrow" viewBox="0 0 100 200" style="width: 100px; height: 200px;">
             <polygon points="50,0 80,100 50,110 20,100" fill="#e74c3c"/><polygon points="50,0 50,110 20,100" fill="#c0392b"/><polygon points="50,200 80,100 50,110 20,100" fill="#bdc3c7"/><polygon points="50,200 50,110 20,100" fill="#7f8c8d"/>
         </svg>
@@ -129,8 +129,8 @@
         </svg>
         <div id="radar-info">Напрямок | 0 м</div>
         
-        <button id="btn-guide" class="btn" style="background:#555; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="toggleGuideMode()" id="ui-btn-vibro">📳 ВІБРО-ПОВОДИР</button>
-        <button class="btn" style="background:#27ae60; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="togglePowerSave()" id="ui-btn-oled">🌙 OLED ЕКОНОМІЯ</button>
+        <button id="btn-guide" class="btn" style="background:#555; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="toggleGuideMode()">📳 ВІБРО-ПОВОДИР</button>
+        <button id="btn-oled" class="btn" style="background:#27ae60; padding:10px; width:100%; font-size:14px; margin-bottom: 5px;" onclick="togglePowerSave()">🌙 OLED ЕКОНОМІЯ</button>
         <div style="color:#aaa; font-size:12px; margin-top:10px; cursor:pointer;" onclick="closeRadar()" id="ui-btn-close">❌ ЗАКРИТИ РАДАР</div>
     </div>
 
@@ -148,7 +148,7 @@
             <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:20px;">❌</button>
         </div>
         <div id="chat-messages">
-            <div class="msg ai-msg" id="ui-chat-welcome">Здоров, внучку! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!</div>
+            <div class="msg ai-msg" id="ui-chat-welcome">Здоров, друже! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!</div>
         </div>
         <div class="chat-input-area">
             <button class="chat-btn-photo" onclick="document.getElementById('chat-photo-input').click()">📸</button>
@@ -159,7 +159,7 @@
 
     <button id="btn-recon" onclick="doRecon()">🛰️ РОЗВІДКА</button>
     <button id="btn-add-past" onclick="document.getElementById('flag-camera-input').click()">📍 ДОДАТИ МИНУЛЕ</button>
-    <button id="btn-map-toggle" onclick="cycleMap()">🗺️ МАПА: СУЧАСНА</button>
+    <button id="btn-map-toggle" onclick="cycleMap()">🗺️ МАПА</button>
 
     <div id="map"></div>
 
@@ -197,7 +197,7 @@
         </div>
     </div>
 
-    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+    <input type="file" id="camera-input" accept="image/*" style="display: none;">
     <input type="file" id="flag-camera-input" accept="image/*" style="display: none;">
     <input type="file" id="backup-input" accept=".json" style="display: none;">
     <input type="file" id="chat-photo-input" accept="image/*" style="display: none;">
@@ -213,84 +213,84 @@
                 chatBtn: "📻 ЧАТ З ДІДОМ", reconBtn: "🛰️ РОЗВІДКА", addPastBtn: "📍 ДОДАТИ МИНУЛЕ",
                 mapGoogle: "🗺️ МАПА (СУЧАСНА)", mapTopo: "⛰️ МАПА (ТОПО)", mapMil: "🪖 МАПА (АРХІВ)", mapSat: "🛰️ МАПА (СУПУТНИК)",
                 targetBtn: "📍 ПРИЦІЛ", photoBtn: "📸 ФОТО",
-                chatTitle: "📻 Рація: Дід Коп", chatWelcome: "Здоров, внучку! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!", chatSend: "ПРИЙОМ", chatPlaceholder: "Запитай діда...",
+                chatTitle: "📻 Рація: Дід Коп", chatWelcome: "Здоров, друже! Питай, що цікавить по копу, історії чи залізяках. Або скидай фото знахідки, я підкажу!", chatSend: "ПРИЙОМ", chatPlaceholder: "Запитай діда...",
                 journalTitle: "Мій Журнал Знахідок", reportBtn: "📋 ЗАВАНТАЖИТИ ЗВІТ", deleteBtn: "🗑️ ВИДАЛИТИ", analyzeBtn: "🧠 АНАЛІЗ",
                 setAi: "🤖 Налаштування ШІ", saveKeyBtn: "💾 ЗБЕРЕГТИ КЛЮЧ", setMap: "🗺️ Офлайн Мапа", cacheBtn: "📥 КЕШУВАТИ МАПУ (2х2 км)",
                 setBackup: "🗄️ Резервна копія", backupBtn: "💾 ЗБЕРЕГТИ БЕКАП", restoreBtn: "📂 ВІДНОВИТИ З ФАЙЛУ", langBtn: "🌍 ЗМІНИТИ МОВУ", resetBtn: "🚨 ПОВНЕ СКИДАННЯ", closeBtn: "ЗАКРИТИ",
-                vibroBtn: "📳 ВІБРО-ПОВОДИР", oledBtn: "🌙 OLED ЕКОНОМІЯ", closeRadarBtn: "❌ ЗАКРИТИ РАДАР", oledHint: "ЕКРАН В РЕЖИМІ OLED-ЕКОНОМІЇ.<br>ДВІЧІ ТОРКНІТЬСЯ ЕКРАНУ.",
-                aiPromptRole: "Ти - Дід Коп, легендарний шукач артефактів та археолог. Твій напарник - Юрій (58 років). Відповідай УКРАЇНСЬКОЮ мовою. Питання/Запит: ",
+                vibroBtn: "📳 ВІБРО-ПОВОДИР", vibroActive: "📳 ПОВОДИР АКТИВНИЙ", oledBtn: "🌙 OLED ЕКОНОМІЯ", closeRadarBtn: "❌ ЗАКРИТИ РАДАР", oledHint: "ЕКРАН В РЕЖИМІ OLED-ЕКОНОМІЇ.<br>ДВІЧІ ТОРКНІТЬСЯ ЕКРАНУ.",
+                aiPromptRole: "Ти - Дід Коп, легендарний шукач артефактів та археолог. Звертайся до користувача 'друже'. Відповідай УКРАЇНСЬКОЮ мовою. Питання/Запит: ",
                 aiPromptPhoto: "Ти - Дід Коп. Проаналізуй фото: що це, епоха, метал, ціна. Відповідай УКРАЇНСЬКОЮ мовою ВЕЛИКИМИ ЛІТЕРАМИ.",
                 aiPromptRecon: "Ти - Дід Коп. Опиши історію цього району, тракти, грунт. Відповідай УКРАЇНСЬКОЮ мовою ВЕЛИКИМИ ЛІТЕРАМИ."
             },
             en: {
                 pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALY", sens: "SENSITIVITY",
-                chatBtn: "📻 CHAT WITH GRANDPA", reconBtn: "🛰️ RECON", addPastBtn: "📍 ADD PAST",
+                chatBtn: "📻 CHAT WITH GRANDPA", reconBtn: "🛰️ RECON", addPastBtn: "📍 ADD PAST FIND",
                 mapGoogle: "🗺️ MAP (MODERN)", mapTopo: "⛰️ MAP (TOPO)", mapMil: "🪖 MAP (ARCHIVE)", mapSat: "🛰️ MAP (SATELLITE)",
                 targetBtn: "📍 TARGET", photoBtn: "📸 PHOTO",
-                chatTitle: "📻 Radio: Grandpa Digger", chatWelcome: "Hello, grandson! Ask me anything about detecting, history, or relics. Or drop a photo, and I'll help you out!", chatSend: "OVER", chatPlaceholder: "Ask Grandpa...",
+                chatTitle: "📻 Radio: Grandpa Digger", chatWelcome: "Hello, my friend! Ask me anything about detecting, history, or relics. Or drop a photo!", chatSend: "OVER", chatPlaceholder: "Ask Grandpa...",
                 journalTitle: "My Finds Journal", reportBtn: "📋 DOWNLOAD REPORT", deleteBtn: "🗑️ DELETE", analyzeBtn: "🧠 ANALYZE",
                 setAi: "🤖 AI Settings", saveKeyBtn: "💾 SAVE KEY", setMap: "🗺️ Offline Map", cacheBtn: "📥 CACHE MAP (2x2 km)",
                 setBackup: "🗄️ Backup", backupBtn: "💾 SAVE BACKUP", restoreBtn: "📂 RESTORE FROM FILE", langBtn: "🌍 CHANGE LANGUAGE", resetBtn: "🚨 FULL RESET", closeBtn: "CLOSE",
-                vibroBtn: "📳 VIBRO-GUIDE", oledBtn: "🌙 OLED SAVER", closeRadarBtn: "❌ CLOSE RADAR", oledHint: "SCREEN IN OLED SAVER MODE.<br>DOUBLE TAP TO RETURN.",
-                aiPromptRole: "You are Grandpa Digger, a legendary metal detectorist and archaeologist. Your partner is Yuriy (58). Respond in ENGLISH. Query: ",
+                vibroBtn: "📳 VIBRO-GUIDE", vibroActive: "📳 GUIDE ACTIVE", oledBtn: "🌙 OLED SAVER", closeRadarBtn: "❌ CLOSE RADAR", oledHint: "SCREEN IN OLED SAVER MODE.<br>DOUBLE TAP TO RETURN.",
+                aiPromptRole: "You are Grandpa Digger, a legendary metal detectorist. Address the user as 'my friend'. Respond in ENGLISH. Query: ",
                 aiPromptPhoto: "You are Grandpa Digger. Analyze the photo: what is it, era, metal, value. Respond in ENGLISH using UPPERCASE.",
                 aiPromptRecon: "You are Grandpa Digger. Describe the history of this area, old roads, soil. Respond in ENGLISH using UPPERCASE."
             },
             pl: {
                 pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIA", sens: "CZUŁOŚĆ",
-                chatBtn: "📻 CZAT Z DZIADKIEM", reconBtn: "🛰️ ZWIAD", addPastBtn: "📍 DODAJ PRZESZŁOŚĆ",
+                chatBtn: "📻 CZAT Z DZIADKIEM", reconBtn: "🛰️ ZWIAD", addPastBtn: "📍 DODAJ ZNALEZISKO",
                 mapGoogle: "🗺️ MAPA (WSPÓŁCZESNA)", mapTopo: "⛰️ MAPA (TOPO)", mapMil: "🪖 MAPA (ARCHIWUM)", mapSat: "🛰️ MAPA (SATELITA)",
                 targetBtn: "📍 CEL", photoBtn: "📸 ZDJĘCIE",
-                chatTitle: "📻 Radio: Dziadek Kopacz", chatWelcome: "Witaj, wnuczku! Pytaj o wykopki, historię i relikty. Albo wrzuć zdjęcie, a ci podpowiem!", chatSend: "ODBIÓR", chatPlaceholder: "Zapytaj Dziadka...",
+                chatTitle: "📻 Radio: Dziadek Kopacz", chatWelcome: "Witaj, przyjacielu! Pytaj o wykopki, historię i relikty. Albo wrzuć zdjęcie!", chatSend: "ODBIÓR", chatPlaceholder: "Zapytaj Dziadka...",
                 journalTitle: "Mój Dziennik Znalezisk", reportBtn: "📋 POBIERZ RAPORT", deleteBtn: "🗑️ USUŃ", analyzeBtn: "🧠 ANALIZA",
                 setAi: "🤖 Ustawienia AI", saveKeyBtn: "💾 ZAPISZ KLUCZ", setMap: "🗺️ Mapa Offline", cacheBtn: "📥 POBIERZ MAPĘ (2x2 km)",
                 setBackup: "🗄️ Kopia zapasowa", backupBtn: "💾 ZAPISZ KOPIĘ", restoreBtn: "📂 PRZYWRÓĆ Z PLIKU", langBtn: "🌍 ZMIEŃ JĘZYK", resetBtn: "🚨 PEŁNY RESET", closeBtn: "ZAMKNIJ",
-                vibroBtn: "📳 WIBRO-PRZEWODNIK", oledBtn: "🌙 OSZCZĘDZANIE OLED", closeRadarBtn: "❌ ZAMKNIJ RADAR", oledHint: "EKRAN W TRYBIE OSZCZĘDZANIA.<br>DOTKNIJ DWA RAZY ABY WRÓCIĆ.",
-                aiPromptRole: "Jesteś Dziadek Kopacz, legendarny poszukiwacz skarbów. Twój partner to Yuriy (58). Odpowiadaj w języku POLSKIM. Zapytanie: ",
+                vibroBtn: "📳 WIBRO-PRZEWODNIK", vibroActive: "📳 PRZEWODNIK AKTYWNY", oledBtn: "🌙 OSZCZĘDZANIE OLED", closeRadarBtn: "❌ ZAMKNIJ RADAR", oledHint: "EKRAN W TRYBIE OSZCZĘDZANIA.<br>DOTKNIJ DWA RAZY ABY WRÓCIĆ.",
+                aiPromptRole: "Jesteś Dziadek Kopacz, poszukiwacz skarbów. Zwracaj się do użytkownika 'przyjacielu'. Odpowiadaj w języku POLSKIM. Zapytanie: ",
                 aiPromptPhoto: "Jesteś Dziadek Kopacz. Przeanalizuj zdjęcie: co to jest, epoka, metal, wartość. Odpowiadaj po POLSKU, używaj WIELKICH LITER.",
                 aiPromptRecon: "Jesteś Dziadek Kopacz. Opisz historię tego obszaru, stare drogi, glebę. Odpowiadaj po POLSKU, używaj WIELKICH LITER."
             },
             de: {
                 pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIE", sens: "EMPFINDLICHKEIT",
-                chatBtn: "📻 CHAT MIT OPA", reconBtn: "🛰️ AUFKLÄRUNG", addPastBtn: "📍 VERGANGENHEIT HINZUFÜGEN",
+                chatBtn: "📻 CHAT MIT OPA", reconBtn: "🛰️ AUFKLÄRUNG", addPastBtn: "📍 FUND HINZUFÜGEN",
                 mapGoogle: "🗺️ KARTE (MODERN)", mapTopo: "⛰️ KARTE (TOPO)", mapMil: "🪖 KARTE (ARCHIV)", mapSat: "🛰️ KARTE (SAT)",
                 targetBtn: "📍 ZIEL", photoBtn: "📸 FOTO",
-                chatTitle: "📻 Funk: Opa Sondler", chatWelcome: "Hallo Enkel! Frag mich alles über das Sondeln. Oder zeig mir ein Foto deines Fundes!", chatSend: "ENDE", chatPlaceholder: "Frag Opa...",
+                chatTitle: "📻 Funk: Opa Sondler", chatWelcome: "Hallo mein Freund! Frag mich alles über das Sondeln. Oder zeig mir ein Foto!", chatSend: "ENDE", chatPlaceholder: "Frag Opa...",
                 journalTitle: "Mein Fundtagebuch", reportBtn: "📋 BERICHT HERUNTERLADEN", deleteBtn: "🗑️ LÖSCHEN", analyzeBtn: "🧠 ANALYSIEREN",
                 setAi: "🤖 KI-Einstellungen", saveKeyBtn: "💾 SCHLÜSSEL SPEICHERN", setMap: "🗺️ Offline-Karte", cacheBtn: "📥 KARTE SPEICHERN (2x2 km)",
                 setBackup: "🗄️ Backup", backupBtn: "💾 BACKUP SPEICHERN", restoreBtn: "📂 AUS DATEI WIEDERHERSTELLEN", langBtn: "🌍 SPRACHE ÄNDERN", resetBtn: "🚨 VOLLSTÄNDIGER RESET", closeBtn: "SCHLIEßEN",
-                vibroBtn: "📳 VIBRO-GUIDE", oledBtn: "🌙 OLED-SPARMODUS", closeRadarBtn: "❌ RADAR SCHLIEßEN", oledHint: "BILDSCHIRM IM SPARMODUS.<br>DOPPELT TIPPEN ZURÜCK.",
-                aiPromptRole: "Du bist Opa Sondler, ein legendärer Schatzsucher. Dein Partner ist Yuriy (58). Antworte auf DEUTSCH. Anfrage: ",
+                vibroBtn: "📳 VIBRO-GUIDE", vibroActive: "📳 GUIDE AKTIV", oledBtn: "🌙 OLED-SPARMODUS", closeRadarBtn: "❌ RADAR SCHLIEßEN", oledHint: "BILDSCHIRM IM SPARMODUS.<br>DOPPELT TIPPEN ZURÜCK.",
+                aiPromptRole: "Du bist Opa Sondler, ein Schatzsucher. Nenne den Benutzer 'mein Freund'. Antworte auf DEUTSCH. Anfrage: ",
                 aiPromptPhoto: "Du bist Opa Sondler. Analysiere das Foto: was ist es, Epoche, Metall, Wert. Antworte auf DEUTSCH in GROSSBUCHSTABEN.",
                 aiPromptRecon: "Du bist Opa Sondler. Beschreibe die Geschichte dieser Gegend. Antworte auf DEUTSCH in GROSSBUCHSTABEN."
             },
             fr: {
                 pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIE", sens: "SENSIBILITÉ",
-                chatBtn: "📻 PARLER À PAPY", reconBtn: "🛰️ RECONNAISSANCE", addPastBtn: "📍 AJOUTER LE PASSÉ",
+                chatBtn: "📻 PARLER À PAPY", reconBtn: "🛰️ RECONNAISSANCE", addPastBtn: "📍 AJOUTER TROUVAILLE",
                 mapGoogle: "🗺️ CARTE (MODERNE)", mapTopo: "⛰️ CARTE (TOPO)", mapMil: "🪖 CARTE (ARCHIVES)", mapSat: "🛰️ CARTE (SATELLITE)",
                 targetBtn: "📍 CIBLE", photoBtn: "📸 PHOTO",
-                chatTitle: "📻 Radio: Papy Détecteur", chatWelcome: "Salut, petit-fils ! Demande-moi tout sur la détection. Ou montre-moi une photo !", chatSend: "À VOUS", chatPlaceholder: "Demander à Papy...",
-                journalTitle: "Mon Journal de Découvertes", reportBtn: "📋 TÉLÉCHARGER LE RAPPORT", deleteBtn: "🗑️ SUPPRIMER", analyzeBtn: "🧠 ANALYSER",
-                setAi: "🤖 Paramètres IA", saveKeyBtn: "💾 ENREGISTRER LA CLÉ", setMap: "🗺️ Carte Hors-Ligne", cacheBtn: "📥 TÉLÉCHARGER CARTE (2x2 km)",
-                setBackup: "🗄️ Sauvegarde", backupBtn: "💾 CRÉER SAUVEGARDE", restoreBtn: "📂 RESTAURER DEPUIS FICHIER", langBtn: "🌍 CHANGER DE LANGUE", resetBtn: "🚨 RÉINITIALISATION COMPLÈTE", closeBtn: "FERMER",
-                vibroBtn: "📳 GUIDE VIBREUR", oledBtn: "🌙 ÉCONOMIE OLED", closeRadarBtn: "❌ FERMER LE RADAR", oledHint: "ÉCRAN EN MODE ÉCONOMIE.<br>DOUBLE TAPE POUR REVENIR.",
-                aiPromptRole: "Tu es Papy Détecteur, un chercheur de trésors légendaire. Ton partenaire est Yuriy (58 ans). Réponds en FRANÇAIS. Requête: ",
+                chatTitle: "📻 Radio: Papy Détecteur", chatWelcome: "Salut, mon ami ! Demande-moi tout sur la détection. Ou montre-moi une photo !", chatSend: "À VOUS", chatPlaceholder: "Demander à Papy...",
+                journalTitle: "Mon Journal de Découvertes", reportBtn: "📋 TÉLÉCHARGER RAPPORT", deleteBtn: "🗑️ SUPPRIMER", analyzeBtn: "🧠 ANALYSER",
+                setAi: "🤖 Paramètres IA", saveKeyBtn: "💾 ENREGISTRER LA CLÉ", setMap: "🗺️ Carte Hors-Ligne", cacheBtn: "📥 TÉLÉCHARGER CARTE (2x2)",
+                setBackup: "🗄️ Sauvegarde", backupBtn: "💾 CRÉER SAUVEGARDE", restoreBtn: "📂 RESTAURER DEPUIS FICHIER", langBtn: "🌍 CHANGER DE LANGUE", resetBtn: "🚨 RÉINITIALISATION", closeBtn: "FERMER",
+                vibroBtn: "📳 GUIDE VIBREUR", vibroActive: "📳 GUIDE ACTIF", oledBtn: "🌙 ÉCONOMIE OLED", closeRadarBtn: "❌ FERMER LE RADAR", oledHint: "ÉCRAN EN MODE ÉCONOMIE.<br>DOUBLE TAPE POUR REVENIR.",
+                aiPromptRole: "Tu es Papy Détecteur. Appelle l'utilisateur 'mon ami'. Réponds en FRANÇAIS. Requête: ",
                 aiPromptPhoto: "Tu es Papy Détecteur. Analyse la photo : quoi, époque, métal, valeur. Réponds en FRANÇAIS en MAJUSCULES.",
-                aiPromptRecon: "Tu es Papy Détecteur. Décris l'histoire de cette zone, les anciennes routes. Réponds en FRANÇAIS en MAJUSCULES."
+                aiPromptRecon: "Tu es Papy Détecteur. Décris l'histoire de cette zone. Réponds en FRANÇAIS en MAJUSCULES."
             },
             pt: {
                 pinpointer: "🧲 PINPOINTER", anomaly: "ANOMALIA", sens: "SENSIBILIDADE",
-                chatBtn: "📻 FALAR COM VOVÔ", reconBtn: "🛰️ RECONHECIMENTO", addPastBtn: "📍 ADICIONAR PASSADO",
+                chatBtn: "📻 FALAR COM VOVÔ", reconBtn: "🛰️ RECONHECIMENTO", addPastBtn: "📍 ADICIONAR ACHADO",
                 mapGoogle: "🗺️ MAPA (MODERNO)", mapTopo: "⛰️ MAPA (TOPO)", mapMil: "🪖 MAPA (ARQUIVO)", mapSat: "🛰️ MAPA (SATÉLITE)",
                 targetBtn: "📍 ALVO", photoBtn: "📸 FOTO",
-                chatTitle: "📻 Rádio: Vovô Detector", chatWelcome: "Olá, neto! Pergunte-me qualquer coisa sobre detecção de metais ou envie uma foto do achado!", chatSend: "CÂMBIO", chatPlaceholder: "Perguntar ao Vovô...",
+                chatTitle: "📻 Rádio: Vovô Detector", chatWelcome: "Olá, meu amigo! Pergunte-me qualquer coisa sobre detecção ou envie uma foto!", chatSend: "CÂMBIO", chatPlaceholder: "Perguntar ao Vovô...",
                 journalTitle: "Meu Diário de Achados", reportBtn: "📋 BAIXAR RELATÓRIO", deleteBtn: "🗑️ APAGAR", analyzeBtn: "🧠 ANALISAR",
                 setAi: "🤖 Configurações de IA", saveKeyBtn: "💾 SALVAR CHAVE", setMap: "🗺️ Mapa Offline", cacheBtn: "📥 BAIXAR MAPA (2x2 km)",
                 setBackup: "🗄️ Backup", backupBtn: "💾 SALVAR BACKUP", restoreBtn: "📂 RESTAURAR DE ARQUIVO", langBtn: "🌍 MUDAR IDIOMA", resetBtn: "🚨 RESET TOTAL", closeBtn: "FECHAR",
-                vibroBtn: "📳 GUIA VIBRATÓRIO", oledBtn: "🌙 ECONOMIA OLED", closeRadarBtn: "❌ FECHAR RADAR", oledHint: "TELA EM MODO DE ECONOMIA.<br>TOQUE DUPLO PARA VOLTAR.",
-                aiPromptRole: "Você é o Vovô Detector, um lendário caçador de tesouros. Seu parceiro é Yuriy (58). Responda em PORTUGUÊS. Pergunta: ",
+                vibroBtn: "📳 GUIA VIBRATÓRIO", vibroActive: "📳 GUIA ATIVO", oledBtn: "🌙 ECONOMIA OLED", closeRadarBtn: "❌ FECHAR RADAR", oledHint: "TELA EM MODO DE ECONOMIA.<br>TOQUE DUPLO PARA VOLTAR.",
+                aiPromptRole: "Você é o Vovô Detector. Chame o usuário de 'meu amigo'. Responda em PORTUGUÊS. Pergunta: ",
                 aiPromptPhoto: "Você é o Vovô Detector. Analise a foto: o que é, época, metal, valor. Responda em PORTUGUÊS usando MAIÚSCULAS.",
-                aiPromptRecon: "Você é o Vovô Detector. Descreva a história desta área, estradas antigas. Responda em PORTUGUÊS usando MAIÚSCULAS."
+                aiPromptRecon: "Você é o Vovô Detector. Descreva a história desta área. Responda em PORTUGUÊS usando MAIÚSCULAS."
             }
         };
 
@@ -335,8 +335,9 @@
             document.getElementById('ui-btn-lang').innerText = d.langBtn;
             document.getElementById('ui-btn-reset').innerText = d.resetBtn;
             document.getElementById('ui-btn-closestg').innerText = d.closeBtn;
-            document.getElementById('ui-btn-vibro').innerText = d.vibroBtn;
-            document.getElementById('ui-btn-oled').innerText = d.oledBtn;
+            document.getElementById('btn-guide').innerText = d.vibroBtn;
+            document.getElementById('ps-vibro-status').innerText = d.vibroActive;
+            document.getElementById('btn-oled').innerText = d.oledBtn;
             document.getElementById('ui-btn-close').innerText = d.closeRadarBtn;
             document.getElementById('ui-oled-hint').innerHTML = d.oledHint;
             
@@ -448,7 +449,7 @@
         }
 
         function toggleGuideMode() {
-            var btn = document.getElementById('ui-btn-vibro');
+            var btn = document.getElementById('btn-guide');
             var psStatus = document.getElementById('ps-vibro-status');
             if (guideModeActive) {
                 guideModeActive = false; clearInterval(guideInterval);
